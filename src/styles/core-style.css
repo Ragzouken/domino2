@@ -1,0 +1,51 @@
+:root {
+    --trans-color-1: rgb(32, 32, 32);
+    --trans-color-2: rgb(48, 48, 48);
+    --trans-gradient: repeating-linear-gradient(
+        -45deg,
+        var(--trans-color-1),
+        var(--trans-color-1) .5em,
+        var(--trans-color-2) .5em,
+        var(--trans-color-2) 1em
+    );
+}
+
+html, body {
+    width: 100vw; height: 100vh;
+    margin: 0; padding: 0;
+}
+
+* { touch-action: none; }
+
+body {
+    display: flex;
+    flex-direction: row;
+}
+
+#frame {
+    position: relative; overflow: hidden; /* clip things */
+    flex: 1;
+    background: black;
+}
+
+#scene {
+    position: absolute; transform-origin: 0 0;
+    width: 0; height: 0;
+}
+
+#frame {
+    cursor: grab;
+    background: var(--trans-gradient);
+}
+
+.card {
+    width: 256px; height: 192px;
+
+    background-color: white;
+    color: black;
+
+    /* tiny curve on corners */
+    border-radius: .5em;
+    /* thick black line below */
+    border-bottom: 3px solid black;
+}

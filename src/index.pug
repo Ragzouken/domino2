@@ -1,12 +1,31 @@
 doctype html
 html
     head
-        title low tech template
+        title domino 2
         meta(charset="utf-8")
+        meta(name="viewport", content="width=device-width, initial-scale=1, maximum-scale=1.0")
+        link(rel="icon" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAXUlEQVQ4jWNkQANfHl77jy6GDHjktRiR+SgcQpqxGcKETcGRY+sZjhxbj5M/ElxACmBB5uByJj4w8F7AawC+0IeBQeYFYmIBXQ0LIQWEACO6wI7lrXjDwSOyGkUPAKUpOzwONiPPAAAAAElFTkSuQmCC")
         // styles
         style#base-style
             include styles/base-style.css
+        style#core-style
+            include styles/core-style.css
+        style#editor-style(data-editor-only)
+            //include styles/editor-style.css
+        // third party libraries
         // scripts
-        script
+        script(id="utility.js")
+            include scripts/utility.js
+        script(id="test.js")
+            include scripts/test.js
+        script(id="main.js")
             include scripts/main.js
     body(onload="start()")
+        #frame
+            #scene
+        script#project-data(type="text/json")
+            include project-data.json
+        script loadData();
+        script#project-data-deferred(type="text/json")
+            include project-data-deferred.json
+        script loadDataDeferred();
