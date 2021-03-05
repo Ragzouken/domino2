@@ -10,4 +10,8 @@ async function loadData() {
 
 async function loadDataDeferred() {
     console.log("deferred");
+
+    const css = html("style");
+    css.textContent = document.getElementById("font").textContent;
+    document.head.appendChild(css);
 }

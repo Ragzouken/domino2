@@ -33,6 +33,7 @@ let grabbing = false;
  */
 async function initCard(scene, card) {
     const cardElement = html("div", { class: "card" });
+    cardElement.innerHTML = "hello <b>this</b> is a <i>domino</i> test card content avasarala asmr";
     scene.container.appendChild(cardElement);
     
     refreshCardStyle(card, cardElement);
@@ -62,7 +63,7 @@ async function initCard(scene, card) {
             // D2 = M2 . G (drawing relative to scene)
             const mouse = scene.mouseEventToSceneTransform(event);
             const transform = mouse.multiply(grab);
-            snap(transform, 64);
+            snap(transform, 16);
 
             const { x, y } = getMatrixTranslation(transform);
             card.position.x = x;

@@ -1,6 +1,6 @@
 :root {
-    --trans-color-1: rgb(32, 32, 32);
-    --trans-color-2: rgb(48, 48, 48);
+    --trans-color-1: rgb(183, 184, 176);
+    --trans-color-2: rgb(168, 165, 158);
     --trans-gradient: repeating-linear-gradient(
         -45deg,
         var(--trans-color-1),
@@ -14,8 +14,6 @@ html, body {
     width: 100vw; height: 100vh;
     margin: 0; padding: 0;
 }
-
-* { touch-action: none; }
 
 body {
     display: flex;
@@ -39,7 +37,9 @@ body {
 }
 
 .card {
-    width: 256px; height: 192px;
+    position: absolute;
+    width: 240px; height: 144px;
+    transform-origin: 0 0;
 
     background-color: white;
     color: black;
@@ -48,4 +48,11 @@ body {
     border-radius: .5em;
     /* thick black line below */
     border-bottom: 3px solid black;
+
+    font-family: "Lora", sans-serif;
+    /* display: flex; */
+    margin: 0; padding: 16px;
+    word-wrap: break-word;
+
+    background-size: cover;
 }
