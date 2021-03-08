@@ -1,3 +1,7 @@
+:root {
+    /* prevent touch gestures getting stolen by browser */
+    touch-action: none;
+}
 
 /* prevent weird highlights https://stackoverflow.com/questions/21003535/ */
 .no-select {

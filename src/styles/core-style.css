@@ -39,7 +39,6 @@ body {
 .card {
     position: absolute;
     width: 240px; height: 144px;
-    transform-origin: 0 0;
 
     background-color: white;
     color: black;
@@ -55,4 +54,18 @@ body {
     word-wrap: break-word;
 
     background-size: cover;
+}
+
+.target {
+    position: absolute;
+    width: 240px; height: 144px;
+    z-index: -1;
+
+    /* tiny curve on corners */
+    border-radius: .5em;
+    /* thick black line */
+    border: 3px solid black;
+    background: black;
+
+    opacity: 50%;
 }

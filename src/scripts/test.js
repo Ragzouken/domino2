@@ -1,16 +1,25 @@
 async function test() {
     const scene = new PanningScene(document.getElementById("scene"));
 
-    for (let i = 0; i < 7; ++i) {
-        initCard(scene, { position: { x: randomInt(0, 600), y: randomInt(0, 300) } });
+    for (let i = 0; i < 15; ++i) {
+        const x = randomInt(-1, 5) * 256;
+        const y = randomInt(-1, 5) * 160;
+
+        initCard(scene, { position: { x, y } });
     }
 }
 
 /** @param {DOMMatrix} transform */
-function snap(transform, granularity = 1) {
-    transform.e = Math.round(transform.e / granularity) * granularity;
-    transform.f = Math.round(transform.f / granularity) * granularity;
+function snap(transform, gx = 1, gy = gx) {
+    transform.e = Math.round(transform.e / gx) * gx;
+    transform.f = Math.round(transform.f / gy) * gy;
 }
+
+/*
+function snap(value, granularity = 1) {
+    return Math.round(value / granularity) * granularity;
+}
+*/
 
 /**
  * @typedef {Object} DominoCard
@@ -33,7 +42,7 @@ let grabbing = false;
  */
 async function initCard(scene, card) {
     const cardElement = html("div", { class: "card" });
-    cardElement.innerHTML = "hello <b>this</b> is a <i>domino</i> test card content avasarala asmr";
+    cardElement.innerHTML = "hello <b>this</b> is a <i>domino</i> test card text bla bla bla bla bla";
     scene.container.appendChild(cardElement);
     
     refreshCardStyle(card, cardElement);
@@ -57,20 +66,40 @@ async function initCard(scene, card) {
 
         grabbing = true;
 
+        const target = html("div", { class: "target" });
+        scene.container.appendChild(target);
+
+        const transform = translationMatrix(card.position);
+        snap(transform, 256/2, 160/2);
+        target.style.setProperty("transform", transform.toString());
+
         const drag = trackGesture(event);
         drag.on("pointermove", (event) => {
             // preserve the relationship between mouse and element
             // D2 = M2 . G (drawing relative to scene)
             const mouse = scene.mouseEventToSceneTransform(event);
             const transform = mouse.multiply(grab);
-            snap(transform, 16);
 
             const { x, y } = getMatrixTranslation(transform);
             card.position.x = x;
             card.position.y = y;
             refreshCardStyle(card, cardElement);
+
+            snap(transform, 256/2, 160/2);
+            target.style.setProperty("transform", transform.toString());
         });
-        drag.on("pointerup", (event) => grabbing = false);
+        drag.on("pointerup", (event) => {
+            grabbing = false;
+            target.remove();
+            
+            const mouse = scene.mouseEventToSceneTransform(event);
+            const transform = mouse.multiply(grab);
+            snap(transform, 256/2, 160/2);
+            const { x, y } = getMatrixTranslation(transform);
+            card.position.x = x;
+            card.position.y = y;
+            refreshCardStyle(card, cardElement);
+        });
     }
 
     cardElement.addEventListener("pointerdown", (event) => {
@@ -151,10 +180,12 @@ class PanningScene {
             const mouse = this.mouseEventToViewportTransform(event);
             const origin = (this.transform.inverse().multiply(mouse)).transformPoint();
 
-            const [minScale, maxScale] = [.5, 8];
+            const [minScale, maxScale] = [.25, 2];
             const prevScale = getMatrixScale(this.transform).x;
             const [minDelta, maxDelta] = [minScale/prevScale, maxScale/prevScale];
-            const deltaScale = clamp(Math.pow(2, event.deltaY * -0.01), minDelta, maxDelta);
+            const magnitude = Math.min(Math.abs(event.deltaY), 25);
+            const exponent = Math.sign(event.deltaY) * magnitude * -0.01;
+            const deltaScale = clamp(Math.pow(2, exponent), minDelta, maxDelta);
 
             // prev * delta <= max -> delta <= max/prev
             this.transform.scaleSelf(
