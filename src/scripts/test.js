@@ -15,6 +15,10 @@ function snap(transform, gx = 1, gy = gx) {
     transform.f = Math.round(transform.f / gy) * gy;
 }
 
+function gridSnap(transform) {
+    return snap(transform, 256/2, 160/2);
+}
+
 /*
 function snap(value, granularity = 1) {
     return Math.round(value / granularity) * granularity;
@@ -27,11 +31,11 @@ function snap(value, granularity = 1) {
  */
 
 /**
- * @param {DominoCard} card
  * @param {HTMLElement} element 
+ * @param {DOMMatrixReadOnly} transform 
  */
-function refreshCardStyle(card, element) {
-    element.style.setProperty("transform", translationMatrix(card.position).toString());
+function setElementTransform(element, transform) {
+    element.style.setProperty("transform", transform.toString());
 }
 
 let grabbing = false;
@@ -45,7 +49,7 @@ async function initCard(scene, card) {
     cardElement.innerHTML = "hello <b>this</b> is a <i>domino</i> test card text bla bla bla bla bla";
     scene.container.appendChild(cardElement);
     
-    refreshCardStyle(card, cardElement);
+    setElementTransform(cardElement, translationMatrix(card.position));
 
     function refreshCursors(event) {
         const cursor = grabbing ? "grabbing"
@@ -57,6 +61,13 @@ async function initCard(scene, card) {
     cardElement.addEventListener("dblclick", (event) => {
         killEvent(event);
     })
+
+    function setCardTransform(transform) {
+        const { x, y } = getMatrixTranslation(transform);
+        card.position.x = x;
+        card.position.y = y;
+        setElementTransform(cardElement, transform);
+    }
 
     function startDrag(event) {
         // determine and save the relationship between mouse and element
@@ -70,8 +81,8 @@ async function initCard(scene, card) {
         scene.container.appendChild(target);
 
         const transform = translationMatrix(card.position);
-        snap(transform, 256/2, 160/2);
-        target.style.setProperty("transform", transform.toString());
+        gridSnap(transform);
+        setElementTransform(target, transform);
 
         const drag = trackGesture(event);
         drag.on("pointermove", (event) => {
@@ -80,13 +91,11 @@ async function initCard(scene, card) {
             const mouse = scene.mouseEventToSceneTransform(event);
             const transform = mouse.multiply(grab);
 
-            const { x, y } = getMatrixTranslation(transform);
-            card.position.x = x;
-            card.position.y = y;
-            refreshCardStyle(card, cardElement);
-
-            snap(transform, 256/2, 160/2);
-            target.style.setProperty("transform", transform.toString());
+            // card drags free from the grid
+            setCardTransform(transform);
+            // target shadow snaps to grid as card would
+            gridSnap(transform);
+            setElementTransform(target, transform);
         });
         drag.on("pointerup", (event) => {
             grabbing = false;
@@ -94,11 +103,10 @@ async function initCard(scene, card) {
             
             const mouse = scene.mouseEventToSceneTransform(event);
             const transform = mouse.multiply(grab);
-            snap(transform, 256/2, 160/2);
-            const { x, y } = getMatrixTranslation(transform);
-            card.position.x = x;
-            card.position.y = y;
-            refreshCardStyle(card, cardElement);
+            
+            // snap card to grid
+            gridSnap(transform);
+            setCardTransform(transform);
         });
     }
 
