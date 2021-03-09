@@ -29,6 +29,11 @@ body {
 #scene {
     position: absolute; transform-origin: 0 0;
     width: 0; height: 0;
+
+    /* i think this helps streamline the panning by telling the browser that it
+       will be constantly moving
+       https://stackoverflow.com/questions/26907265/css-will-change-how-to-use-it-how-it-works */
+    /* will-change: transform; */
 }
 
 #frame {
@@ -49,11 +54,45 @@ body {
     border-bottom: 3px solid black;
 
     font-family: "Lora", sans-serif;
-    /* display: flex; */
-    margin: 0; padding: 16px;
+    display: flex;
+    margin: 0; 
     word-wrap: break-word;
 
     background-size: cover;
+}
+
+.card-text {
+    width: 100%;
+    padding: 16px;
+}
+
+.icon-bar {
+    position: absolute;
+    
+    display: grid;
+    gap: .5em;
+    margin: 0;
+}
+
+.icon-bar > * {
+    width: 2em;
+    height: 2em;
+    grid-row: 1;
+
+    padding: 0;
+    
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-decoration: none;
+}
+
+.card-icon-bar {
+    left: 50%; bottom: 0;
+    transform: translate(-50%, 50%);
+
+    font-size: 1rem;
+    column-gap: .75em;
 }
 
 .target {
@@ -68,4 +107,9 @@ body {
     background: black;
 
     opacity: 50%;
+}
+
+.animate {
+    /* pointer-events: none; */
+    transition: transform .2s ease-in-out, opacity .2s ease-in-out;
 }

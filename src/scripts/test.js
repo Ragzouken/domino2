@@ -1,9 +1,12 @@
+const cellWidth = 256;
+const cellHeight = 160;
+
 async function test() {
     const scene = new PanningScene(document.getElementById("scene"));
 
     for (let i = 0; i < 15; ++i) {
-        const x = randomInt(-1, 5) * 256;
-        const y = randomInt(-1, 5) * 160;
+        const x = randomInt(-1, 5) * cellWidth;
+        const y = randomInt(-1, 5) * cellHeight;
 
         initCard(scene, { position: { x, y } });
     }
@@ -16,7 +19,7 @@ function snap(transform, gx = 1, gy = gx) {
 }
 
 function gridSnap(transform) {
-    return snap(transform, 256/2, 160/2);
+    return snap(transform, cellWidth/2, cellHeight/2);
 }
 
 /*
@@ -38,6 +41,16 @@ function setElementTransform(element, transform) {
     element.style.setProperty("transform", transform.toString());
 }
 
+/**
+ * @param {HTMLElement} element 
+ * @param {number} duration 
+ */
+async function animateElement(element, duration = .2) {
+    element.classList.toggle("animate", true);
+    await sleep(duration * 1000);
+    element.classList.toggle("animate", false);
+}
+
 let grabbing = false;
 
 /**
@@ -45,8 +58,13 @@ let grabbing = false;
  * @param {DominoCard} card 
  */
 async function initCard(scene, card) {
-    const cardElement = html("div", { class: "card" });
-    cardElement.innerHTML = "hello <b>this</b> is a <i>domino</i> test card text bla bla bla bla bla";
+    const cardElement = html(
+        "div", 
+        { class: "card" },
+        html("div", { class: "card-text" }),
+        html("div", { class: "card-icon-bar icon-bar" }, html("a", {}, "🥰"), html("a"), html("a"), html("a")),
+    );
+    cardElement.querySelector(".card-text").innerHTML = "hello <b>this</b> is a <i>domino</i> test card text bla bla bla bla bla";
     scene.container.appendChild(cardElement);
     
     setElementTransform(cardElement, translationMatrix(card.position));
@@ -63,9 +81,7 @@ async function initCard(scene, card) {
     })
 
     function setCardTransform(transform) {
-        const { x, y } = getMatrixTranslation(transform);
-        card.position.x = x;
-        card.position.y = y;
+        card.position = getMatrixTranslation(transform);
         setElementTransform(cardElement, transform);
     }
 
@@ -77,12 +93,10 @@ async function initCard(scene, card) {
 
         grabbing = true;
 
+        // create target shadow
         const target = html("div", { class: "target" });
         scene.container.appendChild(target);
-
-        const transform = translationMatrix(card.position);
-        gridSnap(transform);
-        setElementTransform(target, transform);
+        setElementTransform(target, translationMatrix(card.position));
 
         const drag = trackGesture(event);
         drag.on("pointermove", (event) => {
@@ -99,14 +113,16 @@ async function initCard(scene, card) {
         });
         drag.on("pointerup", (event) => {
             grabbing = false;
-            target.remove();
             
             const mouse = scene.mouseEventToSceneTransform(event);
             const transform = mouse.multiply(grab);
             
             // snap card to grid
+            animateElement(cardElement).then(() => target.remove());
             gridSnap(transform);
             setCardTransform(transform);
+
+            refreshCursors(event);
         });
     }
 
@@ -116,6 +132,14 @@ async function initCard(scene, card) {
         refreshCursors(event);
     });
     
+    cardElement.addEventListener("dblclick", (event) => {
+        scene.locked = true;
+        animateElement(scene.container).then(() => scene.locked = false);
+        const rect = new DOMRect(card.position.x, card.position.y, cellWidth, cellHeight);
+        padRect(rect, 64);
+        scene.frameRect(rect);
+    });
+
     document.addEventListener("pointermove", (event) => {
         if (scene.hidden) return;
         refreshCursors(event);
@@ -217,7 +241,7 @@ class PanningScene {
         // find scale that contains all width, all height, and is within limits
         const sx = bounds.width / rect.width;
         const sy = bounds.height / rect.height;
-        const scale = clamp(Math.min(sx, sy), .5, 16);
+        const scale = clamp(Math.min(sx, sy), .25, 2);
 
         // find translation that centers the rect in the viewport
         const ex = (1/scale - 1/sx) * bounds.width * .5;
