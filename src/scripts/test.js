@@ -45,10 +45,10 @@ function setElementTransform(element, transform) {
  * @param {HTMLElement} element 
  * @param {number} duration 
  */
-async function animateElement(element, duration = .2) {
-    element.classList.toggle("animate", true);
+async function animateElementTransform(element, duration) {
+    element.style.transition = `transform ${duration}s ease-in-out`;
     await sleep(duration * 1000);
-    element.classList.toggle("animate", false);
+    element.style.transition = "none";
 }
 
 let grabbing = false;
@@ -118,7 +118,7 @@ async function initCard(scene, card) {
             const transform = mouse.multiply(grab);
             
             // snap card to grid
-            animateElement(cardElement).then(() => target.remove());
+            animateElementTransform(cardElement, .1).then(() => target.remove());
             gridSnap(transform);
             setCardTransform(transform);
 
@@ -134,7 +134,7 @@ async function initCard(scene, card) {
     
     cardElement.addEventListener("dblclick", (event) => {
         scene.locked = true;
-        animateElement(scene.container).then(() => scene.locked = false);
+        animateElementTransform(scene.container, .2).then(() => scene.locked = false);
         const rect = new DOMRect(card.position.x, card.position.y, cellWidth, cellHeight);
         padRect(rect, 64);
         scene.frameRect(rect);
@@ -216,7 +216,7 @@ class PanningScene {
             const prevScale = getMatrixScale(this.transform).x;
             const [minDelta, maxDelta] = [minScale/prevScale, maxScale/prevScale];
             const magnitude = Math.min(Math.abs(event.deltaY), 25);
-            const exponent = Math.sign(event.deltaY) * magnitude * -0.01;
+            const exponent = Math.sign(event.deltaY) * magnitude * -.15;
             const deltaScale = clamp(Math.pow(2, exponent), minDelta, maxDelta);
 
             // prev * delta <= max -> delta <= max/prev

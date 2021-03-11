@@ -108,8 +108,3 @@ body {
 
     opacity: 50%;
 }
-
-.animate {
-    /* pointer-events: none; */
-    transition: transform .2s ease-in-out, opacity .2s ease-in-out;
-}
