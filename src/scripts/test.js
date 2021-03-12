@@ -1,14 +1,123 @@
 const cellWidth = 256;
 const cellHeight = 160;
 
+/** @type {Map<DominoDataCard, DominoCardView>} */
+const cardToView = new Map();
+
+
 async function test() {
     const scene = new PanningScene(document.getElementById("scene"));
 
+    /** @type {DominoDataProject} */
+    const PROJECT = JSON.parse(JSON.stringify(EMPTY_PROJECT_DATA));
+    
     for (let i = 0; i < 15; ++i) {
         const x = randomInt(-1, 5) * cellWidth;
         const y = randomInt(-1, 5) * cellHeight;
+        PROJECT.cards.push({ 
+            id: `card:${i}`,
+            position: { x, y }, 
+            text: "hello <b>this</b> is a <i>domino</i> test card text bla bla bla bla bla",
+        });
+    }
 
-        initCard(scene, { position: { x, y } });
+    PROJECT.cards.forEach((card) => {
+        const view = new DominoCardView(scene);
+        view.setCard(card);
+        cardToView.set(card, view);
+    });
+}
+
+class DominoCardView {
+    /**
+     * @param {PanningScene} scene 
+     */
+    constructor(scene) {
+        this.scene = scene;
+        this.textElement = html("div", { class: "card-text" });
+        this.iconsElement = html("div", { class: "card-icon-bar icon-bar" }, html("a", {}, "🥰"), html("a"), html("a"), html("a"));
+        this.rootElement = html("div", { class: "card" }, this.textElement, this.iconsElement);
+        
+        this.scene.container.appendChild(this.rootElement);
+
+        listen(this.rootElement, "pointerdown", (event) => {
+            killEvent(event);
+            this.startDrag(event);
+        });
+
+        listen(this.rootElement, "dblclick", (event) => centerCard());
+
+        function centerCard() {
+            scene.locked = true;
+            animateElementTransform(scene.container, .2).then(() => scene.locked = false);
+            const rect = new DOMRect(this.card.position.x, this.card.position.y, cellWidth, cellHeight);
+            padRect(rect, 64);
+            scene.frameRect(rect);
+        }
+    }
+
+    /**
+     * @param {DominoDataCard} card 
+     */
+    setCard(card) {
+        this.card = card;
+        this.regenerate();
+    }
+
+    /** @param {string} value */
+    setCursor(value) {
+        this.rootElement.style.cursor = value;
+    }
+
+    /** @param {DOMMatrix} transform */
+    setTransform(transform) {
+        this.card.position = getMatrixTranslation(transform);
+        setElementTransform(this.rootElement, transform);
+    }
+
+    regenerate() {
+        if (!this.card) return;
+        setElementTransform(this.rootElement, translationMatrix(this.card.position));
+        this.textElement.innerHTML = this.card.text;
+    }
+
+    startDrag(event) {
+        // determine and save the relationship between mouse and element
+        // G = M1^ . E (element relative to mouse)
+        const mouse = this.scene.mouseEventToSceneTransform(event);
+        const grab = mouse.invertSelf().multiplySelf(translationMatrix(this.card.position));
+
+        // create target shadow
+        const target = html("div", { class: "target" });
+        this.scene.container.appendChild(target);
+        setElementTransform(target, translationMatrix(this.card.position));
+
+        const drag = trackGesture(event);
+        drag.on("pointermove", (event) => {
+            // preserve the relationship between mouse and element
+            // D2 = M2 . G (drawing relative to scene)
+            const mouse = this.scene.mouseEventToSceneTransform(event);
+            const transform = mouse.multiply(grab);
+
+            // card drags free from the grid
+            this.setTransform(transform);
+            // target shadow snaps to grid as card would
+            gridSnap(transform);
+            setElementTransform(target, transform);
+        });
+        drag.on("pointerup", (event) => {
+            const mouse = this.scene.mouseEventToSceneTransform(event);
+            const transform = mouse.multiply(grab);
+            
+            // snap card to grid
+            animateElementTransform(this.rootElement, .1).then(() => target.remove());
+            gridSnap(transform);
+            this.setTransform(transform);
+
+            this.setCursor("grab");
+        });
+
+        this.setCursor("grabbing");
     }
 }
 
@@ -21,17 +130,6 @@ function snap(transform, gx = 1, gy = gx) {
 function gridSnap(transform) {
     return snap(transform, cellWidth/2, cellHeight/2);
 }
-
-/*
-function snap(value, granularity = 1) {
-    return Math.round(value / granularity) * granularity;
-}
-*/
-
-/**
- * @typedef {Object} DominoCard
- * @property {Vector2} position
- */
 
 /**
  * @param {HTMLElement} element 
@@ -49,101 +147,6 @@ async function animateElementTransform(element, duration) {
     element.style.transition = `transform ${duration}s ease-in-out`;
     await sleep(duration * 1000);
     element.style.transition = "none";
-}
-
-let grabbing = false;
-
-/**
- * @param {PanningScene} scene 
- * @param {DominoCard} card 
- */
-async function initCard(scene, card) {
-    const cardElement = html(
-        "div", 
-        { class: "card" },
-        html("div", { class: "card-text" }),
-        html("div", { class: "card-icon-bar icon-bar" }, html("a", {}, "🥰"), html("a"), html("a"), html("a")),
-    );
-    cardElement.querySelector(".card-text").innerHTML = "hello <b>this</b> is a <i>domino</i> test card text bla bla bla bla bla";
-    scene.container.appendChild(cardElement);
-    
-    setElementTransform(cardElement, translationMatrix(card.position));
-
-    function refreshCursors(event) {
-        const cursor = grabbing ? "grabbing"
-                     : false ? "grab"
-                     : "pointer";
-        cardElement.style.setProperty("cursor", cursor);
-    }
-
-    cardElement.addEventListener("dblclick", (event) => {
-        killEvent(event);
-    })
-
-    function setCardTransform(transform) {
-        card.position = getMatrixTranslation(transform);
-        setElementTransform(cardElement, transform);
-    }
-
-    function startDrag(event) {
-        // determine and save the relationship between mouse and element
-        // G = M1^ . E (element relative to mouse)
-        const mouse = scene.mouseEventToSceneTransform(event);
-        const grab = mouse.invertSelf().multiplySelf(translationMatrix(card.position));
-
-        grabbing = true;
-
-        // create target shadow
-        const target = html("div", { class: "target" });
-        scene.container.appendChild(target);
-        setElementTransform(target, translationMatrix(card.position));
-
-        const drag = trackGesture(event);
-        drag.on("pointermove", (event) => {
-            // preserve the relationship between mouse and element
-            // D2 = M2 . G (drawing relative to scene)
-            const mouse = scene.mouseEventToSceneTransform(event);
-            const transform = mouse.multiply(grab);
-
-            // card drags free from the grid
-            setCardTransform(transform);
-            // target shadow snaps to grid as card would
-            gridSnap(transform);
-            setElementTransform(target, transform);
-        });
-        drag.on("pointerup", (event) => {
-            grabbing = false;
-            
-            const mouse = scene.mouseEventToSceneTransform(event);
-            const transform = mouse.multiply(grab);
-            
-            // snap card to grid
-            animateElementTransform(cardElement, .1).then(() => target.remove());
-            gridSnap(transform);
-            setCardTransform(transform);
-
-            refreshCursors(event);
-        });
-    }
-
-    cardElement.addEventListener("pointerdown", (event) => {
-        killEvent(event);
-        startDrag(event);
-        refreshCursors(event);
-    });
-    
-    cardElement.addEventListener("dblclick", (event) => {
-        scene.locked = true;
-        animateElementTransform(scene.container, .2).then(() => scene.locked = false);
-        const rect = new DOMRect(card.position.x, card.position.y, cellWidth, cellHeight);
-        padRect(rect, 64);
-        scene.frameRect(rect);
-    });
-
-    document.addEventListener("pointermove", (event) => {
-        if (scene.hidden) return;
-        refreshCursors(event);
-    });
 }
 
 /** @param {PointerEvent} event */
@@ -232,7 +235,7 @@ class PanningScene {
     }
 
     refresh() {
-        this.container.style.setProperty("transform", this.transform.toString());
+        setElementTransform(this.container, this.transform);
     }
 
     frameRect(rect) {
