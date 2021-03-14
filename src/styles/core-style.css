@@ -1,15 +1,3 @@
-:root {
-    --trans-color-1: rgb(183, 184, 176);
-    --trans-color-2: rgb(168, 165, 158);
-    --trans-gradient: repeating-linear-gradient(
-        -45deg,
-        var(--trans-color-1),
-        var(--trans-color-1) .5em,
-        var(--trans-color-2) .5em,
-        var(--trans-color-2) 1em
-    );
-}
-
 html, body {
     width: 100vw; height: 100vh;
     margin: 0; padding: 0;
@@ -23,7 +11,10 @@ body {
 #frame {
     position: relative; overflow: hidden; /* clip things */
     flex: 1;
-    background: black;
+
+    cursor: grab;
+
+    background-color: rgb(183, 184, 176);
 }
 
 #scene {
@@ -34,11 +25,6 @@ body {
        will be constantly moving
        https://stackoverflow.com/questions/26907265/css-will-change-how-to-use-it-how-it-works */
     /* will-change: transform; */
-}
-
-#frame {
-    cursor: grab;
-    background: var(--trans-gradient);
 }
 
 .card {
@@ -67,14 +53,15 @@ body {
 }
 
 .icon-bar {
-    position: absolute;
-    
-    display: grid;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+
     gap: .5em;
     margin: 0;
 }
 
-.icon-bar > * {
+.icon-bar > .icon {
     width: 2em;
     height: 2em;
     grid-row: 1;
@@ -88,11 +75,30 @@ body {
 }
 
 .card-icon-bar {
+    position: absolute;
+    
+    display: grid;
+    gap: .5em;
+    margin: 0;
+
     left: 50%; bottom: 0;
     transform: translate(-50%, 50%);
 
     font-size: 1rem;
     column-gap: .75em;
+}
+
+.card-icon-bar > a {
+    width: 2em;
+    height: 2em;
+    grid-row: 1;
+
+    padding: 0;
+    
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-decoration: none;
 }
 
 .target {
@@ -102,9 +108,48 @@ body {
 
     /* tiny curve on corners */
     border-radius: .5em;
-    /* thick black line */
-    border: 3px solid black;
     background: black;
 
     opacity: 50%;
+}
+
+.card.selected {
+    /* thick black line */
+    outline: 8px solid rgb(106 90 205 / 50%);
+}
+
+/* main toolbar */
+#toolbar {
+    position: absolute;
+    left: 50%; bottom: 0;
+    transform: translate(-50%, 0);
+    
+    font-size: 1.5em;
+    padding: .5em;
+}
+
+/* main toolbar buttons */
+#toolbar > .icon {
+    background: rgb(240, 240, 240);
+    border: 1px solid black;
+    border-radius: 100%;
+    cursor: pointer;
+}
+
+.toolbar-group {
+    border-radius: 100em;
+    background: rgb(0 0 0 / 50%);
+
+    display: flex;
+    flex-direction: row;
+    gap: .5em;
+    margin: 0;
+    padding: .5em;
+}
+
+.toolbar-group > .icon {
+    background: rgb(240, 240, 240);
+    border: 1px solid black;
+    border-radius: 100%;
+    cursor: pointer;
 }

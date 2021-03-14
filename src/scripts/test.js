@@ -4,28 +4,79 @@ const cellHeight = 160;
 /** @type {Map<DominoDataCard, DominoCardView>} */
 const cardToView = new Map();
 
+/** @type {DominoDataProject} */
+const PROJECT = JSON.parse(JSON.stringify(EMPTY_PROJECT_DATA));
+
+/** @type {Set<DominoDataCard>} */
+const selected = new Set();
 
 async function test() {
+    initui();
+
     const scene = new PanningScene(document.getElementById("scene"));
 
-    /** @type {DominoDataProject} */
-    const PROJECT = JSON.parse(JSON.stringify(EMPTY_PROJECT_DATA));
+    listen(scene.viewport, "dblclick", (event) => {
+        killEvent(event);    
+        const transform = scene.mouseEventToSceneTransform(event);
+        transform.e -= cellWidth/2;
+        transform.f -= cellHeight/2;
+        gridSnap(transform);
+        const position = getMatrixTranslation(transform);
+
+        const card = {
+            id: nanoid(),
+            position,
+            text: "new card :)"
+        }
+
+        insertCard(scene, card);
+    });
     
     for (let i = 0; i < 15; ++i) {
         const x = randomInt(-1, 5) * cellWidth;
         const y = randomInt(-1, 5) * cellHeight;
-        PROJECT.cards.push({ 
+        const card = { 
             id: `card:${i}`,
             position: { x, y }, 
             text: "hello <b>this</b> is a <i>domino</i> test card text bla bla bla bla bla",
-        });
+        };
+
+        insertCard(scene, card);
     }
 
-    PROJECT.cards.forEach((card) => {
-        const view = new DominoCardView(scene);
-        view.setCard(card);
-        cardToView.set(card, view);
+    setActionHandler("selection/cancel", () => {
+        deselectCards();
     });
+
+    setActionHandler("selection/delete", () => {
+        Array.from(selected).forEach((card) => deleteCard(card));
+    });
+}
+
+function insertCard(scene, card) {
+    PROJECT.cards.push(card);
+    const view = new DominoCardView(scene);
+    view.setCard(card);
+    cardToView.set(card, view);
+}
+
+function deleteCard(card) {
+    PROJECT.cards.splice(PROJECT.cards.indexOf(card), 1);
+    
+    selected.delete(card);
+    cardToView.get(card).rootElement.remove();
+    cardToView.delete(card);
+}
+
+function deselectCards() {
+    selected.forEach((card) => cardToView.get(card).setSelected(false));
+    selected.clear();
+}
+
+function selectCard(card, deselect = true) {
+    if (deselect) deselectCards();
+    selected.add(card);
+    cardToView.get(card).setSelected(true);
 }
 
 class DominoCardView {
@@ -35,19 +86,36 @@ class DominoCardView {
     constructor(scene) {
         this.scene = scene;
         this.textElement = html("div", { class: "card-text" });
-        this.iconsElement = html("div", { class: "card-icon-bar icon-bar" }, html("a", {}, "🥰"), html("a"), html("a"), html("a"));
+        this.iconsElement = html("div", { class: "card-icon-bar" }, html("a", {}, "🥰"), html("a"), html("a"), html("a"));
         this.rootElement = html("div", { class: "card" }, this.textElement, this.iconsElement);
+
+        this.iconsElement.children[0].addEventListener("click", (event) => {
+            killEvent(event);
+            //deleteCard(this.card);
+        });
         
         this.scene.container.appendChild(this.rootElement);
 
         listen(this.rootElement, "pointerdown", (event) => {
             killEvent(event);
-            this.startDrag(event);
+
+            if (selected.has(this.card)) {
+                selected.forEach((card) => cardToView.get(card).startDrag(event));
+            } else {
+                this.startDrag(event);
+            }
         });
 
-        listen(this.rootElement, "dblclick", (event) => centerCard());
+        listen(this.rootElement, "click", (event) => {
+            selectCard(this.card, !event.shiftKey);
+        });
 
-        function centerCard() {
+        listen(this.rootElement, "dblclick", (event) => {
+            killEvent(event);
+            centerCard();
+        });
+
+        const centerCard = () => {
             scene.locked = true;
             animateElementTransform(scene.container, .2).then(() => scene.locked = false);
             const rect = new DOMRect(this.card.position.x, this.card.position.y, cellWidth, cellHeight);
@@ -75,12 +143,18 @@ class DominoCardView {
         setElementTransform(this.rootElement, transform);
     }
 
+    /** @param {boolean} selected */
+    setSelected(selected) {
+        this.rootElement.classList.toggle("selected", selected);
+    }
+
     regenerate() {
         if (!this.card) return;
         setElementTransform(this.rootElement, translationMatrix(this.card.position));
         this.textElement.innerHTML = this.card.text;
     }
 
+    /** @param {PointerEvent} event */
     startDrag(event) {
         // determine and save the relationship between mouse and element
         // G = M1^ . E (element relative to mouse)
@@ -219,7 +293,7 @@ class PanningScene {
             const prevScale = getMatrixScale(this.transform).x;
             const [minDelta, maxDelta] = [minScale/prevScale, maxScale/prevScale];
             const magnitude = Math.min(Math.abs(event.deltaY), 25);
-            const exponent = Math.sign(event.deltaY) * magnitude * -.15;
+            const exponent = Math.sign(event.deltaY) * magnitude * -.01;
             const deltaScale = clamp(Math.pow(2, exponent), minDelta, maxDelta);
 
             // prev * delta <= max -> delta <= max/prev

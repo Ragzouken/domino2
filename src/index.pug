@@ -16,6 +16,8 @@ html
         // scripts
         script(id="utility.js")
             include scripts/utility.js
+        script(id="htmlui.js")
+            include scripts/htmlui.js
         script(id="domino.js")
             include scripts/domino.js
         script(id="test.js")
@@ -25,6 +27,20 @@ html
     body(onload="start()").no-select
         #frame
             #scene
+        #toolbar.icon-bar(data-block-clicks)
+            .icon#open-about(title="information & settings") 🔨
+            .icon#zoom(title="switch zoom level") 🔎
+            .icon#center(title="jump to center") 🏠
+            .icon#add-delete-icon(hidden, draggable="true", title="drag a new card from here or a drop an unwanted card", .icondata-locked-visibility="hidden") 🗃️
+            .icon#fullscreen(title="toggle fullscreen", hidden) 💢
+            .icon#unlocked(title="prevent accidental editing", .icondata-locked-visibility="hidden") 🔓
+            .icon#locked(title="enable editing", data-locked-visibility="shown") 🔒
+
+            .toolbar-group.icon-bar
+                .icon(data-action="selection/cancel" title="deselect") ❌
+                .icon(data-action="selection/edit" title="edit selected") 📝
+                .icon(data-action="selection/delete" title="delete selected") 💥
+                //.icon(data-action="selection/link" title="link selected") 🖇
         script#project-data(type="text/json")
             include project-data.json
         script loadData();
