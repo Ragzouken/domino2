@@ -1,3 +1,7 @@
+:root {
+    --selection-color: rgb(106 90 205 / 50%);
+}
+
 html, body {
     width: 100vw; height: 100vh;
     margin: 0; padding: 0;
@@ -115,7 +119,7 @@ body {
 
 .card.selected {
     /* thick black line */
-    outline: 8px solid rgb(106 90 205 / 50%);
+    outline: 8px solid var(--selection-color);
 }
 
 /* main toolbar */
@@ -138,7 +142,7 @@ body {
 
 .toolbar-group {
     border-radius: 100em;
-    background: rgb(0 0 0 / 50%);
+    background: var(--selection-color);
 
     display: flex;
     flex-direction: row;

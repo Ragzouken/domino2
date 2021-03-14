@@ -9,11 +9,12 @@ const PROJECT = JSON.parse(JSON.stringify(EMPTY_PROJECT_DATA));
 
 /** @type {Set<DominoDataCard>} */
 const selected = new Set();
+let scene;
 
 async function test() {
     initui();
 
-    const scene = new PanningScene(document.getElementById("scene"));
+    scene = new PanningScene(document.getElementById("scene"));
 
     listen(scene.viewport, "dblclick", (event) => {
         killEvent(event);    
@@ -51,6 +52,10 @@ async function test() {
     setActionHandler("selection/delete", () => {
         Array.from(selected).forEach((card) => deleteCard(card));
     });
+
+    setActionHandler("selection/center", () => {
+        centerSelection();
+    });
 }
 
 function insertCard(scene, card) {
@@ -63,7 +68,7 @@ function insertCard(scene, card) {
 function deleteCard(card) {
     PROJECT.cards.splice(PROJECT.cards.indexOf(card), 1);
     
-    selected.delete(card);
+    deselectCard(card);
     cardToView.get(card).rootElement.remove();
     cardToView.delete(card);
 }
@@ -71,12 +76,36 @@ function deleteCard(card) {
 function deselectCards() {
     selected.forEach((card) => cardToView.get(card).setSelected(false));
     selected.clear();
+
+    elementByPath("selection", "div").hidden = true;
 }
 
 function selectCard(card, deselect = true) {
     if (deselect) deselectCards();
     selected.add(card);
     cardToView.get(card).setSelected(true);
+
+    elementByPath("selection", "div").hidden = false;
+}
+
+function deselectCard(card) {
+    selected.delete(card);
+    cardToView.get(card).setSelected(false);
+
+    elementByPath("selection", "div").hidden = selected.size === 0;
+}
+
+function selectCardToggle(card) {
+    if (selected.has(card)) deselectCard(card);
+    else selectCard(card, false);
+}
+
+function centerSelection() {
+    scene.locked = true;
+    animateElementTransform(scene.container, .2).then(() => scene.locked = false);
+    const rect = boundRects(Array.from(selected).map((card) => new DOMRect(card.position.x, card.position.y, cellWidth, cellHeight)));
+    padRect(rect, 64);
+    scene.frameRect(rect);
 }
 
 class DominoCardView {
@@ -96,32 +125,37 @@ class DominoCardView {
         
         this.scene.container.appendChild(this.rootElement);
 
+        let distance = undefined;
+
         listen(this.rootElement, "pointerdown", (event) => {
             killEvent(event);
+            distance = 0;
 
             if (selected.has(this.card)) {
                 selected.forEach((card) => cardToView.get(card).startDrag(event));
             } else {
+                //if (!event.shiftKey) deselectCards();
                 this.startDrag(event);
             }
         });
 
+        listen(this.rootElement, "pointermove", (event) => {
+            if (distance !== undefined) {
+                distance += Math.abs(event.movementX) + Math.abs(event.movementY);
+            }
+        });
+
         listen(this.rootElement, "click", (event) => {
-            selectCard(this.card, !event.shiftKey);
+            if (distance < 3) {
+                selectCardToggle(this.card);
+            }
+            distance = undefined;
         });
 
         listen(this.rootElement, "dblclick", (event) => {
             killEvent(event);
-            centerCard();
+            centerSelection();
         });
-
-        const centerCard = () => {
-            scene.locked = true;
-            animateElementTransform(scene.container, .2).then(() => scene.locked = false);
-            const rect = new DOMRect(this.card.position.x, this.card.position.y, cellWidth, cellHeight);
-            padRect(rect, 64);
-            scene.frameRect(rect);
-        }
     }
 
     /**
