@@ -80,8 +80,7 @@ function deselectCards() {
     elementByPath("selection", "div").hidden = true;
 }
 
-function selectCard(card, deselect = true) {
-    if (deselect) deselectCards();
+function selectCard(card) {
     selected.add(card);
     cardToView.get(card).setSelected(true);
 
@@ -97,7 +96,7 @@ function deselectCard(card) {
 
 function selectCardToggle(card) {
     if (selected.has(card)) deselectCard(card);
-    else selectCard(card, false);
+    else selectCard(card);
 }
 
 function centerSelection() {
@@ -154,6 +153,8 @@ class DominoCardView {
 
         listen(this.rootElement, "dblclick", (event) => {
             killEvent(event);
+            deselectCards();
+            selectCard(this.card);
             centerSelection();
         });
     }
