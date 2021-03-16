@@ -130,6 +130,9 @@ body {
     
     font-size: 1.5em;
     padding: .5em;
+
+    display: flex;
+    flex-direction: row;
 }
 
 /* main toolbar buttons */
@@ -142,7 +145,6 @@ body {
 
 .toolbar-group {
     border-radius: 100em;
-    background: var(--selection-color);
 
     display: flex;
     flex-direction: row;
@@ -156,4 +158,18 @@ body {
     border: 1px solid black;
     border-radius: 100%;
     cursor: pointer;
+}
+
+.toolbar-group[data-path="global"] {
+    background: rgb(255 255 255 / 50%);
+}
+
+.toolbar-group[data-path="selection"] {
+    background: var(--selection-color);
+}
+
+svg {
+    position: absolute;
+    mix-blend-mode: screen;
+    opacity: 1;
 }

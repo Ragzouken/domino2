@@ -86,6 +86,19 @@ function html(tagName, attributes = {}, ...children) {
     return element;
 }
 
+/**
+ * @param {string} tagName 
+ * @param {*} attributes 
+ * @param  {...SVGElement} children 
+ * @returns {SVGElement}
+ */
+function svg(tagName, attributes = {}, ...children) {
+    const element = document.createElementNS("http://www.w3.org/2000/svg", tagName);
+    Object.entries(attributes).forEach(([name, value]) => element.setAttributeNS(null, name, value));
+    children.forEach((child) => element.append(child));
+    return element;
+}
+
 // from https://github.com/ai/nanoid/blob/master/non-secure/index.js
 const urlAlphabet = 'ModuleSymbhasOwnPr-0123456789ABCDEFGHNRVfgctiUvz_KqYTJkLxpZXIjQW';
 function nanoid(size = 21) {

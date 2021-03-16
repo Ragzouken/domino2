@@ -27,17 +27,24 @@ html
     body(onload="start()").no-select
         #frame
             #scene
-        #toolbar.icon-bar(data-block-clicks)
-            .icon#open-about(title="information & settings") 🔨
-            .icon#center(title="jump to center") 🏠
-            .icon#fullscreen(title="toggle fullscreen", hidden) 💢
-            .icon#unlocked(title="prevent accidental editing", .icondata-locked-visibility="hidden") 🔓
-            .icon#locked(title="enable editing", data-locked-visibility="shown" hidden) 🔒
+                #groups
+        #toolbar(data-block-clicks)
+            .toolbar-group.icon-bar
+                .icon(data-action="global/undo" title="undo") ↩
+                .icon(data-action="global/redo" title="redo") ↪                
+                .icon(data-action="global/home" title="jump to center") 🏠
+
+            .toolbar-group.icon-bar(data-path="global")
+                .icon#unlocked(data-action="global/lock" title="prevent accidental editing") 🔓
+                .icon#locked(data-action="global/unlock" title="enable editing" hidden) 🔒
+                .icon#open-about(data-action="global/menu" title="information & settings") 🔨
+                .icon
+                .icon
 
             .toolbar-group.icon-bar(data-path="selection" hidden)
                 .icon(data-action="selection/cancel" title="deselect") ❌
                 .icon(data-action="selection/center" title="center selected") 🔎
-                .icon(data-action="selection/edit" title="edit selected") 📝
+                .icon(data-action="selection/group" title="group selected") 🔯
                 .icon(data-action="selection/delete" title="delete selected") 💥
                 //.icon(data-action="selection/link" title="link selected") 🖇
         script#project-data(type="text/json")

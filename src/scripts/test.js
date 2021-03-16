@@ -1,5 +1,6 @@
 const cellWidth = 256;
 const cellHeight = 160;
+const dragThreshold = 5;
 
 /** @type {Map<DominoDataCard, DominoCardView>} */
 const cardToView = new Map();
@@ -9,6 +10,7 @@ const PROJECT = JSON.parse(JSON.stringify(EMPTY_PROJECT_DATA));
 
 /** @type {Set<DominoDataCard>} */
 const selected = new Set();
+/** @type {PanningScene} */
 let scene;
 
 async function test() {
@@ -45,17 +47,20 @@ async function test() {
         insertCard(scene, card);
     }
 
-    setActionHandler("selection/cancel", () => {
-        deselectCards();
-    });
+    setActionHandler("global/home", centerOrigin);
 
+    setActionHandler("selection/group", groupSelection);
+    setActionHandler("selection/cancel", deselectCards);
+    setActionHandler("selection/center", centerSelection);
     setActionHandler("selection/delete", () => {
         Array.from(selected).forEach((card) => deleteCard(card));
     });
+}
 
-    setActionHandler("selection/center", () => {
-        centerSelection();
-    });
+function updateToolbar() {
+    const selection = selected.size > 0;
+    elementByPath("global", "div").hidden = selection;
+    elementByPath("selection", "div").hidden = !selection;
 }
 
 function insertCard(scene, card) {
@@ -68,6 +73,12 @@ function insertCard(scene, card) {
 function deleteCard(card) {
     PROJECT.cards.splice(PROJECT.cards.indexOf(card), 1);
     
+    groups.forEach((group) => {
+        const index = group.cards.indexOf(card);
+        if (index >= 0) group.cards.splice(index, 1);
+    });
+    refreshGroups();
+
     deselectCard(card);
     cardToView.get(card).rootElement.remove();
     cardToView.delete(card);
@@ -77,26 +88,34 @@ function deselectCards() {
     selected.forEach((card) => cardToView.get(card).setSelected(false));
     selected.clear();
 
-    elementByPath("selection", "div").hidden = true;
+    updateToolbar();
 }
 
 function selectCard(card) {
     selected.add(card);
     cardToView.get(card).setSelected(true);
 
-    elementByPath("selection", "div").hidden = false;
+    updateToolbar();
 }
 
 function deselectCard(card) {
     selected.delete(card);
     cardToView.get(card).setSelected(false);
 
-    elementByPath("selection", "div").hidden = selected.size === 0;
+    updateToolbar();
 }
 
 function selectCardToggle(card) {
     if (selected.has(card)) deselectCard(card);
     else selectCard(card);
+}
+
+function centerOrigin() {
+    scene.locked = true;
+    animateElementTransform(scene.container, .2).then(() => scene.locked = false);
+    const rect = new DOMRect(-cellWidth*2, -cellHeight*2, cellWidth*4, cellHeight*4)
+    padRect(rect, 64);
+    scene.frameRect(rect);
 }
 
 function centerSelection() {
@@ -105,6 +124,74 @@ function centerSelection() {
     const rect = boundRects(Array.from(selected).map((card) => new DOMRect(card.position.x, card.position.y, cellWidth, cellHeight)));
     padRect(rect, 64);
     scene.frameRect(rect);
+}
+
+/** 
+ * @typedef {Object} DominoCardGroup
+ * @property {DominoDataCard[]} cards
+ * @property {string} color 
+ */
+
+/** @type {DominoCardGroup[]} */
+const groups = [];
+
+function groupSelection() {
+    const cards = Array.from(selected);
+    const color = `rgb(${randomInt(0, 255)} ${randomInt(0, 255)} ${randomInt(0, 255)})`;
+    groups.push({ cards, color });
+    refreshGroups();
+}
+
+function refreshGroups() {
+    const background = document.getElementById("groups");
+    while (background.children.length > 0) background.children[0].remove();
+
+    groups.forEach((group) => {
+        const rect = boundRects(group.cards.map((card) => new DOMRect(card.position.x, card.position.y, cellWidth, cellHeight)));
+
+        let { x, y, width, height } = rect;
+        const transform = translationMatrix({ x: x - 8, y: y - 8 });
+        /** @type {SVGElement[]} */
+        const lines = [];
+
+        width += 0;
+        height += 0;
+
+        lines.push(svg("rect", { x: 0, y: 0, width, height, rx: 16, fill: group.color }));
+        lines[0].addEventListener("pointerdown", (event) => {
+            killEvent(event);
+            group.cards.forEach((card) => {
+                cardToView.get(card).startDrag(event);
+            });
+        });
+
+        /*
+        for (let i = 0; i < group.cards.length; ++i) {
+            for (let j = i + 1; j < group.cards.length; ++j) {
+                let { x: x1, y: y1 } = group.cards[i].position;
+                let { x: x2, y: y2 } = group.cards[j].position;
+
+                x1 -= rect.x - cellWidth/2;
+                y1 -= rect.y - cellHeight/2;
+                x2 -= rect.x - cellWidth/2;
+                y2 -= rect.y - cellHeight/2;
+
+                const line = svg(
+                    "line",
+                    { x1, y1, x2, y2, "stroke-width": 32, stroke: group.color },
+                )
+                lines.push(line);
+            }
+        }
+        */
+
+        const root = svg(
+            "svg", 
+            { width, height, viewbox: `0 0 ${width} ${height}`, transform: transform.toString() },
+            ...lines,
+        );
+        background.appendChild(root);
+    });
 }
 
 class DominoCardView {
@@ -145,7 +232,7 @@ class DominoCardView {
         });
 
         listen(this.rootElement, "click", (event) => {
-            if (distance < 3) {
+            if (distance < dragThreshold) {
                 selectCardToggle(this.card);
             }
             distance = undefined;
@@ -213,6 +300,10 @@ class DominoCardView {
             // target shadow snaps to grid as card would
             gridSnap(transform);
             setElementTransform(target, transform);
+
+            // TODO: this has gotta have a bigger system for updating
+            // on drag and during snap animation etc
+            refreshGroups();
         });
         drag.on("pointerup", (event) => {
             const mouse = this.scene.mouseEventToSceneTransform(event);
@@ -224,6 +315,9 @@ class DominoCardView {
             this.setTransform(transform);
 
             this.setCursor("grab");
+
+            // TODO:
+            refreshGroups();
         });
 
         this.setCursor("grabbing");
@@ -294,7 +388,7 @@ class PanningScene {
         this.viewport.addEventListener("pointerdown", (event) => {
             if (this.hidden || this.locked) return;
             killEvent(event);
-    
+
             // determine and save the relationship between mouse and scene
             // G = M1^ . S (scene relative to mouse)
             const mouse = this.mouseEventToViewportTransform(event);
@@ -302,6 +396,8 @@ class PanningScene {
             document.body.style.setProperty("cursor", "grabbing");
             this.viewport.style.setProperty("cursor", "grabbing");
 
+            let distance = 0;
+            
             const gesture = trackGesture(event);
             gesture.on("pointermove", (event) => {
                 // preserve the relationship between mouse and scene
@@ -309,10 +405,16 @@ class PanningScene {
                 const mouse = this.mouseEventToViewportTransform(event);
                 this.transform = mouse.multiply(grab);
                 this.refresh();
+
+                distance += Math.abs(event.movementX) + Math.abs(event.movementY);
             });
             gesture.on("pointerup", (event) => {
                 document.body.style.removeProperty("cursor");
                 this.viewport.style.removeProperty("cursor");
+
+                if (distance < dragThreshold) {
+                    deselectCards();
+                }
             });
         });
         
