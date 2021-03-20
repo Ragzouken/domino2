@@ -162,7 +162,7 @@ function cycleGroup() {
 /** @param {DominoCardGroup[]} groups */
 function selectGroups(groups) {
     const combined = new Set([...groups, ...selectedGroups]);
-    const same = combined.size === selectedGroups.length;
+    const same = combined.size === selectedGroups.length && combined.size === groups.length;
 
     if (same) {
         cycleGroup();
