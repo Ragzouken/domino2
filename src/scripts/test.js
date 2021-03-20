@@ -112,6 +112,7 @@ function deselectCards() {
 }
 
 function deselectGroup() {
+    selectedGroups.forEach((group) => groupToView.get(group).setSelected(false));
     selectedGroups.length = 0;
     updateToolbar();
 }
@@ -158,8 +159,9 @@ function cycleGroup() {
 
 function selectGroups(groups) {
     deselectCards();
-    selectedGroups.length = 0;
+    deselectGroup();
     selectedGroups.push(...groups);
+    groupToView.get(selectedGroups[0]).setSelected(true);
     updateToolbar();
 }
 
@@ -238,7 +240,8 @@ class DominoGroupView {
      */
     constructor(group) {
         this.group = group;
-        this.root = svg("svg");        
+        this.root = svg("svg");
+        this.selected = false;
 
         const background = document.getElementById("groups");
         background.appendChild(this.root);
@@ -253,20 +256,30 @@ class DominoGroupView {
         this.root.remove();
     }
 
+    setSelected(value) {
+        this.selected = value;
+
+        if (this.selectElement) {
+            this.selectElement.style.display = value ? "unset" : "none";
+        }
+    }
+
     regenerateSVG() {
         while (this.root.children.length > 0) this.root.children[0].remove();
 
         if (this.group.type === "rect") {
-            const rect = boundCards(this.group.cards);
-            padRect(rect, 8);
+            const { x, y, width, height } = boundCards(this.group.cards);
+            const rect = { x, y, width, height };
             rect.width -= 16;
             rect.height -= 16;
-            const { x, y, width, height } = rect;
+ 
+            padRect(rect, 8);
+            const backing = svg("rect", { ...rect, rx: 16, fill: this.group.color });
+            
+            padRect(rect, 0);            
+            this.selectElement = svg("rect", {...rect, rx: 16, fill: "none", stroke: "gray", "stroke-dasharray": 4, "stroke-width": 8 });
 
-
-            const backing = svg("rect", { x, y, width, height, rx: 16, fill: this.group.color });
-            //const select = svg("rect", { x: 0, y: 0, width, height, rx: 16, fill: this.group.color });
-            //this.root.appendChild(select);
+            this.root.appendChild(this.selectElement);
             this.root.appendChild(backing);
         } else if (this.group.type === "chain") {
             for (let i = 0; i < this.group.cards.length - 1; ++i) {
@@ -286,13 +299,17 @@ class DominoGroupView {
             }
         }
 
-        { 
-            const { x, y, width, height } = this.root.getBBox();
+        {  
+            const rect = this.root.getBBox();
+            padRect(rect, 8);
+            const { x, y, width, height } = rect;
             this.root.setAttributeNS(null, "width", width.toString());
             this.root.setAttributeNS(null, "height", height.toString());
             this.root.setAttributeNS(null, "viewBox", `${x} ${y} ${width} ${height}`);
             this.root.setAttributeNS(null, "transform", translationMatrix({ x, y }).toString());
         }
+
+        this.setSelected(this.selected);
     }
 }
 
