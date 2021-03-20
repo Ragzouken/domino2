@@ -73,6 +73,18 @@ function imageToRendering2D(image) {
 }
 
 /**
+ * @template {any} T
+ * @param {T[]} array 
+ * @param {T} value
+ * @returns {boolean}
+ */
+function arrayDiscard(array, value) {
+    const index = array.indexOf(value);
+    if (index >= 0) array.splice(index, 1);
+    return index >= 0;
+}
+
+/**
  * @template {keyof HTMLElementTagNameMap} K
  * @param {K} tagName 
  * @param {*} attributes 
@@ -87,10 +99,11 @@ function html(tagName, attributes = {}, ...children) {
 }
 
 /**
- * @param {string} tagName 
+ * @template {keyof SVGElementTagNameMap} K
+ * @param {K} tagName 
  * @param {*} attributes 
  * @param  {...SVGElement} children 
- * @returns {SVGElement}
+ * @returns {SVGElementTagNameMap[K]}
  */
 function svg(tagName, attributes = {}, ...children) {
     const element = document.createElementNS("http://www.w3.org/2000/svg", tagName);

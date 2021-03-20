@@ -4,12 +4,16 @@ const dragThreshold = 5;
 
 /** @type {Map<DominoDataCard, DominoCardView>} */
 const cardToView = new Map();
+/** @type {Map<DominoCardGroup, DominoGroupView>} */
+const groupToView = new Map();
 
 /** @type {DominoDataProject} */
 const PROJECT = JSON.parse(JSON.stringify(EMPTY_PROJECT_DATA));
 
 /** @type {Set<DominoDataCard>} */
 const selected = new Set();
+/** @type {DominoCardGroup[]} */
+let selectedGroups = [];
 /** @type {PanningScene} */
 let scene;
 
@@ -55,12 +59,25 @@ async function test() {
     setActionHandler("selection/delete", () => {
         Array.from(selected).forEach((card) => deleteCard(card));
     });
+
+    setActionHandler("group/cycle", cycleGroup);
+    setActionHandler("group/delete", deleteGroup);
+    setActionHandler("group/type", () => {
+        const group = selectedGroups[0];
+
+        const types = ["rect", "chain"];
+        const index = (types.indexOf(group.type) + 1) % types.length;
+        group.type = types[index];
+        refreshGroups();
+    });
 }
 
 function updateToolbar() {
     const selection = selected.size > 0;
-    elementByPath("global", "div").hidden = selection;
+    const selectedGroup = selectedGroups.length > 0;
+    elementByPath("global", "div").hidden = selection || selectedGroup;
     elementByPath("selection", "div").hidden = !selection;
+    elementByPath("group", "div").hidden = !selectedGroup;
 }
 
 function insertCard(scene, card) {
@@ -71,17 +88,20 @@ function insertCard(scene, card) {
 }
 
 function deleteCard(card) {
-    PROJECT.cards.splice(PROJECT.cards.indexOf(card), 1);
-    
-    groups.forEach((group) => {
-        const index = group.cards.indexOf(card);
-        if (index >= 0) group.cards.splice(index, 1);
-    });
+    arrayDiscard(PROJECT.cards, card);
+
+    groups.forEach((group) => arrayDiscard(group.cards, card));
     refreshGroups();
 
     deselectCard(card);
     cardToView.get(card).rootElement.remove();
     cardToView.delete(card);
+}
+
+function deselectAll() {
+    deselectCards();
+    deselectGroup();
+    updateToolbar();
 }
 
 function deselectCards() {
@@ -91,10 +111,23 @@ function deselectCards() {
     updateToolbar();
 }
 
+function deselectGroup() {
+    selectedGroups.length = 0;
+    updateToolbar();
+}
+
+function deleteGroup() {
+    const group = selectedGroups.shift();
+    arrayDiscard(groups, group);
+    groupToView.get(group).dispose();
+    deselectGroup();
+}
+
 function selectCard(card) {
     selected.add(card);
     cardToView.get(card).setSelected(true);
 
+    deselectGroup();
     updateToolbar();
 }
 
@@ -106,8 +139,28 @@ function deselectCard(card) {
 }
 
 function selectCardToggle(card) {
-    if (selected.has(card)) deselectCard(card);
-    else selectCard(card);
+    if (selectedGroups.length > 0) {
+        const group = selectedGroups[0];
+        if (group.cards.indexOf(card) >= 0) arrayDiscard(group.cards, card);
+        else group.cards.push(card);
+        refreshGroups();
+    } else {
+        if (selected.has(card)) deselectCard(card);
+        else selectCard(card);
+    }
+}
+
+function cycleGroup() {
+    const current = selectedGroups.shift();
+    selectedGroups.push(current);
+    updateToolbar();
+}
+
+function selectGroups(groups) {
+    deselectCards();
+    selectedGroups.length = 0;
+    selectedGroups.push(...groups);
+    updateToolbar();
 }
 
 function centerOrigin() {
@@ -130,6 +183,7 @@ function centerSelection() {
  * @typedef {Object} DominoCardGroup
  * @property {DominoDataCard[]} cards
  * @property {string} color 
+ * @property {string} type
  */
 
 /** @type {DominoCardGroup[]} */
@@ -138,60 +192,108 @@ const groups = [];
 function groupSelection() {
     const cards = Array.from(selected);
     const color = `rgb(${randomInt(0, 255)} ${randomInt(0, 255)} ${randomInt(0, 255)})`;
-    groups.push({ cards, color });
+    const group = { cards, color, type: "rect" };
+    groups.push(group);
     refreshGroups();
+    selectGroups([group]);
+}
+
+/** @type {Map<SVGElement, DominoCardGroup} */
+const svgToGroup = new Map();
+
+function dragGroups(event) {
+    const overlapping = document.elementsFromPoint(event.clientX, event.clientY);
+    const svgs = overlapping.map((overlap) => overlap.closest("svg")).filter((svg) => svg !== null);
+    const groups = svgs.map((svg) => svgToGroup.get(svg));
+
+    groups.forEach((group) => {
+        group.cards.forEach((card) => {
+            cardToView.get(card).startDrag(event);
+        });
+    });
+    selectGroups(groups);
 }
 
 function refreshGroups() {
-    const background = document.getElementById("groups");
-    while (background.children.length > 0) background.children[0].remove();
-
     groups.forEach((group) => {
-        const rect = boundRects(group.cards.map((card) => new DOMRect(card.position.x, card.position.y, cellWidth, cellHeight)));
+        const view = groupToView.get(group) || new DominoGroupView(group);
+        groupToView.set(group, view);
+        view.regenerateSVG();
+    });
+}
 
-        let { x, y, width, height } = rect;
-        const transform = translationMatrix({ x: x - 8, y: y - 8 });
-        /** @type {SVGElement[]} */
-        const lines = [];
+/** @param {DominoDataCard} card */
+function boundCard(card) {
+    return new DOMRect(card.position.x, card.position.y, cellWidth, cellHeight);
+}
 
-        width += 0;
-        height += 0;
+/** @param {DominoDataCard[]} cards */
+function boundCards(cards) {
+    return boundRects(cards.map(boundCard));
+}
 
-        lines.push(svg("rect", { x: 0, y: 0, width, height, rx: 16, fill: group.color }));
-        lines[0].addEventListener("pointerdown", (event) => {
+class DominoGroupView {
+    /**
+     * @param {DominoCardGroup} group 
+     */
+    constructor(group) {
+        this.group = group;
+        this.root = svg("svg");        
+
+        const background = document.getElementById("groups");
+        background.appendChild(this.root);
+        svgToGroup.set(this.root, this.group);
+        this.root.addEventListener("pointerdown", (event) => {
             killEvent(event);
-            group.cards.forEach((card) => {
-                cardToView.get(card).startDrag(event);
-            });
+            dragGroups(event);
         });
+    }
 
-        /*
-        for (let i = 0; i < group.cards.length; ++i) {
-            for (let j = i + 1; j < group.cards.length; ++j) {
-                let { x: x1, y: y1 } = group.cards[i].position;
-                let { x: x2, y: y2 } = group.cards[j].position;
+    dispose() {
+        this.root.remove();
+    }
 
-                x1 -= rect.x - cellWidth/2;
-                y1 -= rect.y - cellHeight/2;
-                x2 -= rect.x - cellWidth/2;
-                y2 -= rect.y - cellHeight/2;
+    regenerateSVG() {
+        while (this.root.children.length > 0) this.root.children[0].remove();
+
+        if (this.group.type === "rect") {
+            const rect = boundCards(this.group.cards);
+            padRect(rect, 8);
+            rect.width -= 16;
+            rect.height -= 16;
+            const { x, y, width, height } = rect;
+
+
+            const backing = svg("rect", { x, y, width, height, rx: 16, fill: this.group.color });
+            //const select = svg("rect", { x: 0, y: 0, width, height, rx: 16, fill: this.group.color });
+            //this.root.appendChild(select);
+            this.root.appendChild(backing);
+        } else if (this.group.type === "chain") {
+            for (let i = 0; i < this.group.cards.length - 1; ++i) {
+                let { x: x1, y: y1 } = this.group.cards[i].position;
+                let { x: x2, y: y2 } = this.group.cards[i+1].position;
+
+                x1 += cellWidth/2;
+                y1 += cellHeight/2;
+                x2 += cellWidth/2;
+                y2 += cellHeight/2;
 
                 const line = svg(
                     "line",
-                    { x1, y1, x2, y2, "stroke-width": 32, stroke: group.color },
+                    { x1, y1, x2, y2, "stroke-width": 32, stroke: this.group.color },
                 )
-                lines.push(line);
+                this.root.appendChild(line);
             }
         }
-        */
 
-        const root = svg(
-            "svg", 
-            { width, height, viewbox: `0 0 ${width} ${height}`, transform: transform.toString() },
-            ...lines,
-        );
-        background.appendChild(root);
-    });
+        { 
+            const { x, y, width, height } = this.root.getBBox();
+            this.root.setAttributeNS(null, "width", width.toString());
+            this.root.setAttributeNS(null, "height", height.toString());
+            this.root.setAttributeNS(null, "viewBox", `${x} ${y} ${width} ${height}`);
+            this.root.setAttributeNS(null, "transform", translationMatrix({ x, y }).toString());
+        }
+    }
 }
 
 class DominoCardView {
@@ -240,9 +342,11 @@ class DominoCardView {
 
         listen(this.rootElement, "dblclick", (event) => {
             killEvent(event);
+            /*
             deselectCards();
             selectCard(this.card);
             centerSelection();
+            */
         });
     }
 
@@ -413,7 +517,7 @@ class PanningScene {
                 this.viewport.style.removeProperty("cursor");
 
                 if (distance < dragThreshold) {
-                    deselectCards();
+                    deselectAll();
                 }
             });
         });

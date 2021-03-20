@@ -1,5 +1,6 @@
 :root {
-    --selection-color: rgb(106 90 205 / 50%);
+    --selection-color: rgba(106, 90, 205, 50%);
+    --group-color: rgba(205, 90, 119, 0.5);
 }
 
 html, body {
@@ -168,8 +169,18 @@ body {
     background: var(--selection-color);
 }
 
+.toolbar-group[data-path="group"] {
+    background: var(--group-color);
+}
+
 svg {
     position: absolute;
     mix-blend-mode: screen;
     opacity: 1;
+    z-index: -2;
+    pointer-events: none;
+}
+
+svg > * {
+    pointer-events: initial;
 }
