@@ -154,15 +154,25 @@ function selectCardToggle(card) {
 function cycleGroup() {
     const current = selectedGroups.shift();
     selectedGroups.push(current);
+    groupToView.get(current).setSelected(false);
+    groupToView.get(selectedGroups[0]).setSelected(true);
     updateToolbar();
 }
 
+/** @param {DominoCardGroup[]} groups */
 function selectGroups(groups) {
-    deselectCards();
-    deselectGroup();
-    selectedGroups.push(...groups);
-    groupToView.get(selectedGroups[0]).setSelected(true);
-    updateToolbar();
+    const combined = new Set([...groups, ...selectedGroups]);
+    const same = combined.size === selectedGroups.length;
+
+    if (same) {
+        cycleGroup();
+    } else {
+        deselectCards();
+        deselectGroup();
+        selectedGroups.push(...groups);
+        groupToView.get(selectedGroups[0]).setSelected(true);
+        updateToolbar();
+    }
 }
 
 function centerOrigin() {
@@ -206,14 +216,14 @@ const svgToGroup = new Map();
 function dragGroups(event) {
     const overlapping = document.elementsFromPoint(event.clientX, event.clientY);
     const svgs = overlapping.map((overlap) => overlap.closest("svg")).filter((svg) => svg !== null);
-    const groups = svgs.map((svg) => svgToGroup.get(svg));
+    const groups = new Set(svgs.map((svg) => svgToGroup.get(svg)));
 
     groups.forEach((group) => {
         group.cards.forEach((card) => {
             cardToView.get(card).startDrag(event);
         });
     });
-    selectGroups(groups);
+    selectGroups(Array.from(groups));
 }
 
 function refreshGroups() {
@@ -285,6 +295,9 @@ class DominoGroupView {
             this.root.appendChild(this.selectElement);
             this.root.appendChild(backing);
         } else if (this.group.type === "chain") {
+            this.selectElement = svg("g");
+            this.root.appendChild(this.selectElement);
+
             for (let i = 0; i < this.group.cards.length - 1; ++i) {
                 let { x: x1, y: y1 } = this.group.cards[i].position;
                 let { x: x2, y: y2 } = this.group.cards[i+1].position;
@@ -299,12 +312,19 @@ class DominoGroupView {
                     { x1, y1, x2, y2, "stroke-width": 32, stroke: this.group.color },
                 )
                 this.root.appendChild(line);
+
+                const line2 = svg(
+                    "line",
+                    { x1, y1, x2, y2, "stroke-width": 40, stroke: "black" },
+                    svg("animate", { attributeName: "stroke", values: "white; black; white", dur: "1s", repeatCount: "indefinite" })
+                )
+                this.selectElement.appendChild(line2);
             }
         }
 
         {  
             const rect = this.root.getBBox();
-            padRect(rect, 8);
+            padRect(rect, 16);
             const { x, y, width, height } = rect;
             this.root.setAttributeNS(null, "width", width.toString());
             this.root.setAttributeNS(null, "height", height.toString());
