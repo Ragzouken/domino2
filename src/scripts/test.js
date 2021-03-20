@@ -276,9 +276,12 @@ class DominoGroupView {
             padRect(rect, 8);
             const backing = svg("rect", { ...rect, rx: 16, fill: this.group.color });
             
-            padRect(rect, 0);            
-            this.selectElement = svg("rect", {...rect, rx: 16, fill: "none", stroke: "gray", "stroke-dasharray": 4, "stroke-width": 8 });
-
+            padRect(rect, 8);           
+            this.selectElement = svg(
+                "rect", 
+                {...rect, rx: 24, fill: "gray" },
+                svg("animate", { attributeName: "fill", values: "white; black; white", dur: "1s", repeatCount: "indefinite" }),
+            );
             this.root.appendChild(this.selectElement);
             this.root.appendChild(backing);
         } else if (this.group.type === "chain") {
