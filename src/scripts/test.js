@@ -60,7 +60,9 @@ async function test() {
         Array.from(selected).forEach((card) => deleteCard(card));
     });
 
+    setActionHandler("group/recolor", recolorGroup);
     setActionHandler("group/delete", deleteGroup);
+    setActionHandler("group/select", selectGroupCards);
 }
 
 function updateToolbar() {
@@ -108,11 +110,22 @@ function deselectGroup() {
     updateToolbar();
 }
 
+function selectGroupCards() {
+    const group = selectedGroups[0];
+    group.cards.forEach(selectCard);
+}
+
 function deleteGroup() {
     const group = selectedGroups.shift();
     arrayDiscard(groups, group);
     groupToView.get(group).dispose();
     deselectGroup();
+}
+
+function recolorGroup() {
+    const group = selectedGroups[0];
+    group.color = `rgb(${randomInt(0, 255)} ${randomInt(0, 255)} ${randomInt(0, 255)})`;
+    groupToView.get(group).regenerateSVG();
 }
 
 function selectCard(card) {

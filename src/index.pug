@@ -48,8 +48,8 @@ html
             
             .toolbar-group.icon-bar(data-path="group" hidden)
                 //.icon(data-action="group/cancel" title="deselect") ❌
-                .icon
-                .icon
+                .icon(data-action="group/select" title="select cards") 🎴
+                .icon(data-action="group/recolor" title="reroll color") 🎨
                 .icon(data-action="group/delete" title="delete group") 💥
         script#project-data(type="text/json")
             include project-data.json
