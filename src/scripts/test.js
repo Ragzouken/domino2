@@ -60,16 +60,7 @@ async function test() {
         Array.from(selected).forEach((card) => deleteCard(card));
     });
 
-    setActionHandler("group/cycle", cycleGroup);
     setActionHandler("group/delete", deleteGroup);
-    setActionHandler("group/type", () => {
-        const group = selectedGroups[0];
-
-        const types = ["rect", "chain"];
-        const index = (types.indexOf(group.type) + 1) % types.length;
-        group.type = types[index];
-        refreshGroups();
-    });
 }
 
 function updateToolbar() {
@@ -167,11 +158,15 @@ function selectGroups(groups) {
     if (same) {
         cycleGroup();
     } else {
+        const prev = selectedGroups[0];
+
         deselectCards();
         deselectGroup();
         selectedGroups.push(...groups);
         groupToView.get(selectedGroups[0]).setSelected(true);
         updateToolbar();
+        
+        if (prev === selectedGroups[0]) cycleGroup();
     }
 }
 
@@ -194,8 +189,7 @@ function centerSelection() {
 /** 
  * @typedef {Object} DominoCardGroup
  * @property {DominoDataCard[]} cards
- * @property {string} color 
- * @property {string} type
+ * @property {string} color
  */
 
 /** @type {DominoCardGroup[]} */
@@ -204,7 +198,7 @@ const groups = [];
 function groupSelection() {
     const cards = Array.from(selected);
     const color = `rgb(${randomInt(0, 255)} ${randomInt(0, 255)} ${randomInt(0, 255)})`;
-    const group = { cards, color, type: "rect" };
+    const group = { cards, color };
     groups.push(group);
     refreshGroups();
     selectGroups([group]);
@@ -277,55 +271,25 @@ class DominoGroupView {
     regenerateSVG() {
         while (this.root.children.length > 0) this.root.children[0].remove();
 
-        if (this.group.type === "rect") {
-            const { x, y, width, height } = boundCards(this.group.cards);
-            const rect = { x, y, width, height };
-            rect.width -= 16;
-            rect.height -= 16;
- 
-            padRect(rect, 8);
-            const backing = svg("rect", { ...rect, rx: 16, fill: this.group.color });
-            
-            padRect(rect, 8);           
-            this.selectElement = svg(
-                "rect", 
-                {...rect, rx: 24, fill: "gray" },
-                svg("animate", { attributeName: "fill", values: "white; black; white", dur: "1s", repeatCount: "indefinite" }),
-            );
-            this.root.appendChild(this.selectElement);
-            this.root.appendChild(backing);
-        } else if (this.group.type === "chain") {
-            this.selectElement = svg("g");
-            this.root.appendChild(this.selectElement);
+        const { x, y, width, height } = boundCards(this.group.cards);
+        const rect = { x, y, width, height };
+        rect.width -= 16;
+        rect.height -= 16;
 
-            for (let i = 0; i < this.group.cards.length - 1; ++i) {
-                let { x: x1, y: y1 } = this.group.cards[i].position;
-                let { x: x2, y: y2 } = this.group.cards[i+1].position;
+        padRect(rect, 8);
+        const backing = svg("rect", { ...rect, rx: 16, fill: this.group.color });
+        
+        padRect(rect, 8);           
+        this.selectElement = svg(
+            "rect", 
+            {...rect, rx: 24, fill: "gray" },
+            svg("animate", { attributeName: "fill", values: "white; black; white", dur: "1s", repeatCount: "indefinite" }),
+        );
+        this.root.appendChild(this.selectElement);
+        this.root.appendChild(backing);
 
-                x1 += cellWidth/2;
-                y1 += cellHeight/2;
-                x2 += cellWidth/2;
-                y2 += cellHeight/2;
-
-                const line = svg(
-                    "line",
-                    { x1, y1, x2, y2, "stroke-width": 32, stroke: this.group.color },
-                )
-                this.root.appendChild(line);
-
-                const line2 = svg(
-                    "line",
-                    { x1, y1, x2, y2, "stroke-width": 40, stroke: "black" },
-                    svg("animate", { attributeName: "stroke", values: "white; black; white", dur: "1s", repeatCount: "indefinite" })
-                )
-                this.selectElement.appendChild(line2);
-            }
-        }
-
-        {  
-            const rect = this.root.getBBox();
-            padRect(rect, 16);
-            const { x, y, width, height } = rect;
+        {
+            const { x, y, width, height } = this.root.getBBox();
             this.root.setAttributeNS(null, "width", width.toString());
             this.root.setAttributeNS(null, "height", height.toString());
             this.root.setAttributeNS(null, "viewBox", `${x} ${y} ${width} ${height}`);
