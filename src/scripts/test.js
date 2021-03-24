@@ -257,7 +257,7 @@ class DominoGroupView {
      */
     constructor(group) {
         this.group = group;
-        this.root = svg("svg");
+        this.root = svg("svg", { class: "group" });
         this.selected = false;
 
         const background = document.getElementById("groups");
@@ -317,10 +317,12 @@ class DominoCardView {
     constructor(scene) {
         this.scene = scene;
         this.textElement = html("div", { class: "card-text" });
-        this.iconsElement = html("div", { class: "card-icon-bar" }, html("a", {}, "🥰"), html("a"), html("a"), html("a"));
-        this.rootElement = html("div", { class: "card" }, this.textElement, this.iconsElement);
+        const resize = svg("svg", { class: "resize-handle" }, svg("polygon", { points: "0,32 32,32 32,0" }));
+        const body = html("div", { class: "card-body" }, this.textElement, resize);
+        const icons = html("div", { class: "card-icon-bar" }, html("a", {}, "🥰"), html("a"), html("a"), html("a"));
+        this.rootElement = html("div", { class: "card-root" }, body, icons);
 
-        this.iconsElement.children[0].addEventListener("click", (event) => {
+        icons.children[0].addEventListener("click", (event) => {
             killEvent(event);
             //deleteCard(this.card);
         });
