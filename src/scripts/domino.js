@@ -2,6 +2,7 @@
  * @typedef {Object} DominoDataCard
  * @property {string} id
  * @property {Vector2} position
+ * @property {Vector2} size
  * @property {string} text
  */
 

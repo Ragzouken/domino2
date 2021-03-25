@@ -122,7 +122,7 @@ body {
     opacity: 50%;
 }
 
-.card.selected {
+.card-root.selected {
     /* thick black line */
     outline: 8px solid var(--selection-color);
 }

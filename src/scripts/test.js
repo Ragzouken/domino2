@@ -1,6 +1,9 @@
 const cellWidth = 256;
 const cellHeight = 160;
-const dragThreshold = 5;
+
+const cellGap = 16;
+const cellWidth2 = 112;
+const cellHeight2 = 64;
 
 /** @type {Map<DominoDataCard, DominoCardView>} */
 const cardToView = new Map();
@@ -33,6 +36,7 @@ async function test() {
         const card = {
             id: nanoid(),
             position,
+            size: { x: 2, y: 2 },
             text: "new card :)"
         }
 
@@ -45,6 +49,7 @@ async function test() {
         const card = { 
             id: `card:${i}`,
             position: { x, y }, 
+            size: { x: randomInt(2, 4), y: randomInt(2, 4) },
             text: "hello <b>this</b> is a <i>domino</i> test card text bla bla bla bla bla",
         };
 
@@ -243,12 +248,25 @@ function refreshGroups() {
 
 /** @param {DominoDataCard} card */
 function boundCard(card) {
-    return new DOMRect(card.position.x, card.position.y, cellWidth, cellHeight);
+    return new DOMRect(
+        card.position.x, 
+        card.position.y, 
+        gridSizeDomino(card.size.x), 
+        gridSizeDomino(card.size.y),
+    );
 }
 
 /** @param {DominoDataCard[]} cards */
 function boundCards(cards) {
     return boundRects(cards.map(boundCard));
+}
+
+function gridSizeDomino(cells) {
+    return gridSize(cells, cellWidth2, cellGap);
+}
+
+function gridSize(cells, cellWidth, cellGap) {
+    return cellWidth + (cells - 1) * (cellWidth + cellGap);
 }
 
 class DominoGroupView {
@@ -329,11 +347,13 @@ class DominoCardView {
         
         this.scene.container.appendChild(this.rootElement);
 
-        let distance = undefined;
+        listen(resize.children[0], "pointerdown", (event) => {
+            killEvent(event);
+            this.startResize(event);
+        });
 
         listen(this.rootElement, "pointerdown", (event) => {
             killEvent(event);
-            distance = 0;
 
             if (selected.has(this.card)) {
                 selected.forEach((card) => cardToView.get(card).startDrag(event));
@@ -341,19 +361,6 @@ class DominoCardView {
                 //if (!event.shiftKey) deselectCards();
                 this.startDrag(event);
             }
-        });
-
-        listen(this.rootElement, "pointermove", (event) => {
-            if (distance !== undefined) {
-                distance += Math.abs(event.movementX) + Math.abs(event.movementY);
-            }
-        });
-
-        listen(this.rootElement, "click", (event) => {
-            if (distance < dragThreshold) {
-                selectCardToggle(this.card);
-            }
-            distance = undefined;
         });
 
         listen(this.rootElement, "dblclick", (event) => {
@@ -394,6 +401,53 @@ class DominoCardView {
         if (!this.card) return;
         setElementTransform(this.rootElement, translationMatrix(this.card.position));
         this.textElement.innerHTML = this.card.text;
+
+        const bounds = boundCard(this.card);
+        this.rootElement.style.width = `${bounds.width}px`;
+        this.rootElement.style.height = `${bounds.height}px`;
+    }
+
+    /** @param {PointerEvent} event */
+    startResize(event) {
+        function fit(value) {
+            let cells;
+            for (cells = 1; gridSizeDomino(cells) < value - cellGap; ++cells);
+            return cells;
+        }
+
+        const { x: x1, y: y1 } = getMatrixTranslation(this.scene.mouseEventToSceneTransform(event));
+        const [w1, h1] = [this.rootElement.clientWidth, this.rootElement.clientHeight];
+
+        // create target shadow
+        const target = html("div", { class: "target" });
+        this.scene.container.appendChild(target);
+        setElementTransform(target, translationMatrix(this.card.position));
+
+        const gesture = trackGesture(event);
+        gesture.on("pointermove", (event) => {
+            const { x: x2, y: y2 } = getMatrixTranslation(this.scene.mouseEventToSceneTransform(event));
+            const [dx, dy] = [x2 - x1, y2 - y1];
+            const [w2, h2] = [w1 + dx, h1 + dy];
+
+            this.card.size.x = fit(w2);
+            this.card.size.y = fit(h2);
+
+            this.rootElement.style.width = `${w2}px`;
+            this.rootElement.style.height = `${h2}px`;
+
+            const bounds = boundCard(this.card);
+            target.style.width = `${bounds.width}px`;
+            target.style.height = `${bounds.height}px`;
+        });
+        gesture.on("pointerup", (event) => {
+            const bounds = boundCard(this.card);
+            this.rootElement.style.width = `${bounds.width}px`;
+            this.rootElement.style.height = `${bounds.height}px`;
+
+            // snap card to grid
+            animateElementSize(this.rootElement, .1).then(() => target.remove());
+            target.remove();
+        });
     }
 
     /** @param {PointerEvent} event */
@@ -407,6 +461,9 @@ class DominoCardView {
         const target = html("div", { class: "target" });
         this.scene.container.appendChild(target);
         setElementTransform(target, translationMatrix(this.card.position));
+        const bounds = boundCard(this.card);
+        target.style.width = `${bounds.width}px`;
+        target.style.height = `${bounds.height}px`;
 
         const drag = trackGesture(event);
         drag.on("pointermove", (event) => {
@@ -439,6 +496,9 @@ class DominoCardView {
             // TODO:
             refreshGroups();
         });
+        drag.on("click", (event) => {
+            selectCardToggle(this.card);
+        })
 
         this.setCursor("grabbing");
     }
@@ -472,20 +532,40 @@ async function animateElementTransform(element, duration) {
     element.style.transition = "none";
 }
 
-/** @param {PointerEvent} event */
+/**
+ * @param {HTMLElement} element 
+ * @param {number} duration 
+ */
+ async function animateElementSize(element, duration) {
+    element.style.transition = `width ${duration}s ease-in-out, height ${duration}s ease-in-out`;
+    await sleep(duration * 1000);
+    element.style.transition = "none";
+}
+
+/** 
+ * @param {PointerEvent} event 
+ */
 function trackGesture(event) {
     const emitter = new EventEmitter();
     const pointer = event.pointerId;
 
+    const clickMovementLimit = 5;
+    let totalMovement = 0;
+
     const removes = [
         listen(document, "pointerup", (event) => {
-            if (event.pointerId === pointer) {
-                removes.forEach((remove) => remove());
-                emitter.emit("pointerup", event);
-            }
+            if (event.pointerId !== pointer) return;
+            
+            removes.forEach((remove) => remove());
+            emitter.emit("pointerup", event);
+            if (totalMovement <= clickMovementLimit) emitter.emit("click", event);
         }),
         listen(document, "pointermove", (event) => {
-            if (event.pointerId === pointer) emitter.emit("pointermove", event);
+            if (event.pointerId !== pointer) return;
+
+            totalMovement += Math.abs(event.movementX);
+            totalMovement += Math.abs(event.movementY);
+            emitter.emit("pointermove", event);
         }),
     ];
 
@@ -516,8 +596,6 @@ class PanningScene {
             document.body.style.setProperty("cursor", "grabbing");
             this.viewport.style.setProperty("cursor", "grabbing");
 
-            let distance = 0;
-            
             const gesture = trackGesture(event);
             gesture.on("pointermove", (event) => {
                 // preserve the relationship between mouse and scene
@@ -525,17 +603,14 @@ class PanningScene {
                 const mouse = this.mouseEventToViewportTransform(event);
                 this.transform = mouse.multiply(grab);
                 this.refresh();
-
-                distance += Math.abs(event.movementX) + Math.abs(event.movementY);
             });
             gesture.on("pointerup", (event) => {
                 document.body.style.removeProperty("cursor");
                 this.viewport.style.removeProperty("cursor");
-
-                if (distance < dragThreshold) {
-                    deselectAll();
-                }
             });
+            gesture.on("click", (event) => {
+                deselectAll();
+            })
         });
         
         this.viewport.addEventListener('wheel', (event) => {

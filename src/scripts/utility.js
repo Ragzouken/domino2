@@ -337,7 +337,7 @@ class EventEmitter {
 
 /**
  * @template {keyof WindowEventMap} K
- * @param {Window | Document | HTMLElement} element 
+ * @param {Window | Document | Element} element 
  * @param {K} type 
  * @param {(event: WindowEventMap[K]) => any} listener
  */

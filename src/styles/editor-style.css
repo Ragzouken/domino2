@@ -1,0 +1,32 @@
+.selection-flash {
+    animation-name: selection-flash;
+    animation-direction: alternate;
+    animation-duration: .75s;
+    animation-iteration-count: infinite;
+}
+
+@keyframes selection-flash {
+    0% {
+        fill: black;
+    }
+
+    100% {
+        fill: white;
+    }
+}
+
+.resize-handle {
+    position: absolute;
+    width: 32px; height: 32px;
+    right: -1px; bottom: -1px;
+
+    opacity: 50%;
+}
+
+.resize-handle > polygon {
+    cursor: se-resize;
+}
+
+.target {
+    transition: transform .1s, width .1s, height .1s;
+}
