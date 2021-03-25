@@ -150,6 +150,7 @@ function deselectCard(card) {
 
 function selectCardToggle(card) {
     if (selectedGroups.length > 0) {
+        console.log("TOGGLING CARD");
         const group = selectedGroups[0];
         if (group.cards.indexOf(card) >= 0) arrayDiscard(group.cards, card);
         else group.cards.push(card);
@@ -232,7 +233,7 @@ function dragGroups(event) {
 
     groups.forEach((group) => {
         group.cards.forEach((card) => {
-            cardToView.get(card).startDrag(event);
+            cardToView.get(card).startDrag(event, true);
         });
     });
     selectGroups(Array.from(groups));
@@ -300,8 +301,6 @@ class DominoGroupView {
 
         const { x, y, width, height } = boundCards(this.group.cards);
         const rect = { x, y, width, height };
-        rect.width -= 16;
-        rect.height -= 16;
 
         padRect(rect, 8);
         const backing = svg("rect", { ...rect, rx: 16, fill: this.group.color });
@@ -447,7 +446,7 @@ class DominoCardView {
     }
 
     /** @param {PointerEvent} event */
-    startDrag(event) {
+    startDrag(event, indirect=false) {
         // determine and save the relationship between mouse and element
         // G = M1^ . E (element relative to mouse)
         const mouse = this.scene.mouseEventToSceneTransform(event);
@@ -493,7 +492,7 @@ class DominoCardView {
             refreshGroups();
         });
         drag.on("click", (event) => {
-            selectCardToggle(this.card);
+            if (!indirect) selectCardToggle(this.card);
         })
 
         this.setCursor("grabbing");
@@ -551,7 +550,7 @@ function trackGesture(event) {
     const removes = [
         listen(document, "pointerup", (event) => {
             if (event.pointerId !== pointer) return;
-            
+
             removes.forEach((remove) => remove());
             emitter.emit("pointerup", event);
             if (totalMovement <= clickMovementLimit) emitter.emit("click", event);
