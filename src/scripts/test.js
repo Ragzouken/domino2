@@ -49,7 +49,7 @@ async function test() {
         const card = { 
             id: `card:${i}`,
             position: { x, y }, 
-            size: { x: randomInt(2, 4), y: randomInt(2, 4) },
+            size: { x: randomInt(2, 3), y: randomInt(2, 3) },
             text: "hello <b>this</b> is a <i>domino</i> test card text bla bla bla bla bla",
         };
 
@@ -251,18 +251,14 @@ function boundCard(card) {
     return new DOMRect(
         card.position.x, 
         card.position.y, 
-        gridSizeDomino(card.size.x), 
-        gridSizeDomino(card.size.y),
+        gridSize(card.size.x, cellWidth2, cellGap), 
+        gridSize(card.size.y, cellHeight2, cellGap),
     );
 }
 
 /** @param {DominoDataCard[]} cards */
 function boundCards(cards) {
     return boundRects(cards.map(boundCard));
-}
-
-function gridSizeDomino(cells) {
-    return gridSize(cells, cellWidth2, cellGap);
 }
 
 function gridSize(cells, cellWidth, cellGap) {
@@ -409,9 +405,9 @@ class DominoCardView {
 
     /** @param {PointerEvent} event */
     startResize(event) {
-        function fit(value) {
+        function fit(value, cellSize, cellGap) {
             let cells;
-            for (cells = 1; gridSizeDomino(cells) < value - cellGap; ++cells);
+            for (cells = 1; gridSize(cells, cellSize, cellGap) < value - cellGap; ++cells);
             return cells;
         }
 
@@ -429,8 +425,8 @@ class DominoCardView {
             const [dx, dy] = [x2 - x1, y2 - y1];
             const [w2, h2] = [w1 + dx, h1 + dy];
 
-            this.card.size.x = fit(w2);
-            this.card.size.y = fit(h2);
+            this.card.size.x = Math.max(2, fit(w2, cellWidth2, cellGap));
+            this.card.size.y = Math.max(2, fit(h2, cellHeight2, cellGap));
 
             this.rootElement.style.width = `${w2}px`;
             this.rootElement.style.height = `${h2}px`;
