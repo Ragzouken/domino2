@@ -233,7 +233,7 @@ function dragGroups(event) {
 
     groups.forEach((group) => {
         group.cards.forEach((card) => {
-            cardToView.get(card).startDrag(event, true);
+            cardToView.get(card).startDrag(event);
         });
     });
     selectGroups(Array.from(groups));
@@ -354,7 +354,10 @@ class DominoCardView {
                 selected.forEach((card) => cardToView.get(card).startDrag(event));
             } else {
                 //if (!event.shiftKey) deselectCards();
-                this.startDrag(event);
+                const drag = this.startDrag(event);
+                drag.on("click", (event) => {
+                    selectCardToggle(this.card);
+                })
             }
         });
 
@@ -433,6 +436,7 @@ class DominoCardView {
             const bounds = boundCard(this.card);
             target.style.width = `${bounds.width}px`;
             target.style.height = `${bounds.height}px`;
+            refreshGroups();
         });
         gesture.on("pointerup", (event) => {
             const bounds = boundCard(this.card);
@@ -442,11 +446,13 @@ class DominoCardView {
             // snap card to grid
             animateElementSize(this.rootElement, .1).then(() => target.remove());
             target.remove();
+
+            refreshGroups();
         });
     }
 
     /** @param {PointerEvent} event */
-    startDrag(event, indirect=false) {
+    startDrag(event) {
         // determine and save the relationship between mouse and element
         // G = M1^ . E (element relative to mouse)
         const mouse = this.scene.mouseEventToSceneTransform(event);
@@ -491,11 +497,10 @@ class DominoCardView {
             // TODO:
             refreshGroups();
         });
-        drag.on("click", (event) => {
-            if (!indirect) selectCardToggle(this.card);
-        })
 
         this.setCursor("grabbing");
+
+        return drag;
     }
 }
 
