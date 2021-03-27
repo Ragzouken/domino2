@@ -8,10 +8,12 @@
 @keyframes selection-flash {
     0% {
         fill: black;
+        border-color: black;
     }
 
     100% {
         fill: white;
+        border-color: white;
     }
 }
 
@@ -29,4 +31,9 @@
 
 .target {
     transition: transform .1s, width .1s, height .1s;
+}
+
+.card-selection {
+    position: absolute;
+    left: -16px; right: -16px; top: -16px; bottom: -16px;
 }

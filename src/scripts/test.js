@@ -76,6 +76,10 @@ function updateToolbar() {
     elementByPath("global", "div").hidden = selection || selectedGroup;
     elementByPath("selection", "div").hidden = !selection;
     elementByPath("group", "div").hidden = !selectedGroup;
+
+    // selections
+    const active = selectedGroups.length > 0 ? new Set(selectedGroups[0].cards) : selected;
+    cardToView.forEach((view, card) => view.setSelected(active.has(card)));
 }
 
 function insertCard(scene, card) {
@@ -110,7 +114,7 @@ function deselectCards() {
 }
 
 function deselectGroup() {
-    selectedGroups.forEach((group) => groupToView.get(group).setSelected(false));
+    selectedGroups.forEach((group) => groupToView.get(group).setHighlight(false));
     selectedGroups.length = 0;
     updateToolbar();
 }
@@ -150,11 +154,11 @@ function deselectCard(card) {
 
 function selectCardToggle(card) {
     if (selectedGroups.length > 0) {
-        console.log("TOGGLING CARD");
         const group = selectedGroups[0];
         if (group.cards.indexOf(card) >= 0) arrayDiscard(group.cards, card);
         else group.cards.push(card);
         refreshGroups();
+        updateToolbar();
     } else {
         if (selected.has(card)) deselectCard(card);
         else selectCard(card);
@@ -164,8 +168,8 @@ function selectCardToggle(card) {
 function cycleGroup() {
     const current = selectedGroups.shift();
     selectedGroups.push(current);
-    groupToView.get(current).setSelected(false);
-    groupToView.get(selectedGroups[0]).setSelected(true);
+    groupToView.get(current).setHighlight(false);
+    groupToView.get(selectedGroups[0]).setHighlight(true);
     updateToolbar();
 }
 
@@ -182,7 +186,7 @@ function selectGroups(groups) {
         deselectCards();
         deselectGroup();
         selectedGroups.push(...groups);
-        groupToView.get(selectedGroups[0]).setSelected(true);
+        groupToView.get(selectedGroups[0]).setHighlight(true);
         updateToolbar();
         
         if (prev === selectedGroups[0]) cycleGroup();
@@ -223,7 +227,7 @@ function groupSelection() {
     selectGroups([group]);
 }
 
-/** @type {Map<SVGElement, DominoCardGroup} */
+/** @type {Map<SVGElement, DominoCardGroup>} */
 const svgToGroup = new Map();
 
 function dragGroups(event) {
@@ -288,7 +292,7 @@ class DominoGroupView {
         this.root.remove();
     }
 
-    setSelected(value) {
+    setHighlight(value) {
         this.selected = value;
 
         if (this.selectElement) {
@@ -319,7 +323,7 @@ class DominoGroupView {
             this.root.setAttributeNS(null, "transform", translationMatrix({ x, y }).toString());
         }
 
-        this.setSelected(this.selected);
+        this.setHighlight(this.selected);
     }
 }
 
@@ -350,15 +354,18 @@ class DominoCardView {
         listen(this.rootElement, "pointerdown", (event) => {
             killEvent(event);
 
+            let drags;
+
             if (selected.has(this.card)) {
-                selected.forEach((card) => cardToView.get(card).startDrag(event));
+                drags = Array.from(selected).map((card) => cardToView.get(card).startDrag(event));
             } else {
                 //if (!event.shiftKey) deselectCards();
-                const drag = this.startDrag(event);
-                drag.on("click", (event) => {
-                    selectCardToggle(this.card);
-                })
+                drags = [this.startDrag(event)];
             }
+
+            drags[0].on("click", (event) => {
+                selectCardToggle(this.card);
+            })
         });
 
         listen(this.rootElement, "dblclick", (event) => {
