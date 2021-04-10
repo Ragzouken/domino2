@@ -30,8 +30,8 @@ html
                 #groups
         #toolbar(data-block-clicks)
             .toolbar-group.icon-bar
-                .icon(data-action="global/undo" title="undo") ↩
-                .icon(data-action="global/redo" title="redo") ↪                
+                .icon.disabled(data-action="global/undo" title="undo") ↩
+                .icon.disabled(data-action="global/redo" title="redo") ↪                
                 .icon(data-action="global/home" title="jump to center") 🏠
 
             .toolbar-group.icon-bar(data-path="global")
@@ -43,7 +43,9 @@ html
             .toolbar-group.icon-bar(data-path="selection" hidden)
                 //.icon(data-action="selection/cancel" title="deselect") ❌
                 .icon(data-action="selection/center" title="center selected") 🔎
-                .icon(data-action="selection/group" title="group selected") 📁
+                .icon(data-action="selection/edit" title="edit cards") 📝
+                .icon(data-action="selection/link" data-path="selection/link" title="link selected") ↗
+                .icon(data-action="selection/group" data-path="selection/group" title="group selected") 📁
                 .icon(data-action="selection/delete" title="delete selected") 💥
             
             .toolbar-group.icon-bar(data-path="group" hidden)
@@ -51,6 +53,27 @@ html
                 .icon(data-action="group/select" title="select cards") 🎴
                 .icon(data-action="group/recolor" title="reroll color") 🎨
                 .icon(data-action="group/delete" title="delete group") 💥
+        #editor-blocker.full(data-action="editor/close" data-path="editor" data-blocks-clicks hidden)
+            #editor-panel(data-block-clicks)
+                .tab-bar
+                    div(data-action="editor/close") ◀ 
+                    div(data-tab-toggle="editor/text" data-tab-default) TEXT
+                    div(data-tab-toggle="editor/icons") ICONS
+                    div(data-tab-toggle="editor/style") STYLE
+                .editor-page.tab-page(data-tab-body="editor/text")
+                    textarea#content-input(data-path="editor/text")
+                .editor-page.tab-page(data-tab-body="editor/icons")
+                    each row in [1, 2, 3, 4]
+                        input(id=`editor-icon-select-${row}` type="text").icon-select
+                        input(id=`editor-icon-command-${row}` type="text").icon-command
+                .editor-page(data-tab-body="editor/style")
+                    #type-select.button-list(data-export-clear)
+                    .button-list
+                        button#upload-image upload image
+                    .button-list
+                        input#alt-text(type="text" placeholder="alt text")
+                        button#remove-image remove image
+                        input#upload-image-input(type="file" accept="image/*", hidden)
         script#project-data(type="text/json")
             include project-data.json
         script loadData();

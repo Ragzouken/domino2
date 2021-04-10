@@ -7,6 +7,13 @@
  */
 
 /**
+ * @typedef {Object} DominoDataLink
+ * @property {string} id
+ * @property {string} cardA
+ * @property {string} cardB
+ */
+
+/**
  * @typedef {Object} DominoDataProjectDetails
  * @property {string} id
  * @property {string} name
@@ -17,6 +24,7 @@
  * @typedef {Object} DominoDataProject
  * @property {DominoDataProjectDetails} details
  * @property {DominoDataCard[]} cards
+ * @property {DominoDataLink[]} links
  */
 
 /** @type {DominoDataProject} */
@@ -27,4 +35,5 @@ const EMPTY_PROJECT_DATA = {
         title: "empty project"
     },
     cards: [],
+    links: []
 }

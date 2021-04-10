@@ -9,6 +9,8 @@ const cellHeight2 = 64;
 const cardToView = new Map();
 /** @type {Map<DominoCardGroup, DominoGroupView>} */
 const groupToView = new Map();
+/** @type {Map<DominoDataLink, DominoLinkView} */
+const linkToView = new Map();
 
 /** @type {DominoDataProject} */
 const PROJECT = JSON.parse(JSON.stringify(EMPTY_PROJECT_DATA));
@@ -19,6 +21,8 @@ const selected = new Set();
 let selectedGroups = [];
 /** @type {PanningScene} */
 let scene;
+/** @type {DominoDataCard} */
+let linking;
 
 async function test() {
     initui();
@@ -43,13 +47,15 @@ async function test() {
         insertCard(scene, card);
     });
     
-    for (let i = 0; i < 15; ++i) {
-        const x = randomInt(-1, 5) * cellWidth;
-        const y = randomInt(-1, 5) * cellHeight;
-        const card = { 
+    for (let i = 0; i < 5; ++i) {
+        const x = randomInt(0, 4) * cellWidth;
+        const y = randomInt(0, 4) * cellHeight;
+        const h = randomInt(2, 4);
+        const w = randomInt(2, h);
+        const card = {
             id: `card:${i}`,
             position: { x, y }, 
-            size: { x: randomInt(2, 3), y: randomInt(2, 3) },
+            size: { x: w, y: h },
             text: "hello <b>this</b> is a <i>domino</i> test card text bla bla bla bla bla",
         };
 
@@ -58,7 +64,9 @@ async function test() {
 
     setActionHandler("global/home", centerOrigin);
 
+    setActionHandler("selection/edit", editSelected);
     setActionHandler("selection/group", groupSelection);
+    setActionHandler("selection/link", beginLink);
     setActionHandler("selection/cancel", deselectCards);
     setActionHandler("selection/center", centerSelection);
     setActionHandler("selection/delete", () => {
@@ -68,6 +76,17 @@ async function test() {
     setActionHandler("group/recolor", recolorGroup);
     setActionHandler("group/delete", deleteGroup);
     setActionHandler("group/select", selectGroupCards);
+
+    setActionHandler("editor/close", closeEditor);
+
+    const editorText = elementByPath("editor/text", "textarea");
+    editorText.addEventListener("input", () => {
+        if (selected.size !== 1) return;
+        const card = Array.from(selected)[0];
+
+        card.text = editorText.value;
+        cardToView.get(card).regenerate();
+    });
 }
 
 function updateToolbar() {
@@ -76,6 +95,9 @@ function updateToolbar() {
     elementByPath("global", "div").hidden = selection || selectedGroup;
     elementByPath("selection", "div").hidden = !selection;
     elementByPath("group", "div").hidden = !selectedGroup;
+
+    elementByPath("selection/link", "div").hidden = true;//selected.size > 1;
+    //elementByPath("selection/group", "div").hidden = selected.size === 1;
 
     // selections
     const active = selectedGroups.length > 0 ? new Set(selectedGroups[0].cards) : selected;
@@ -93,7 +115,7 @@ function deleteCard(card) {
     arrayDiscard(PROJECT.cards, card);
 
     groups.forEach((group) => arrayDiscard(group.cards, card));
-    refreshGroups();
+    refreshSVGs();
 
     deselectCard(card);
     cardToView.get(card).rootElement.remove();
@@ -137,6 +159,18 @@ function recolorGroup() {
     groupToView.get(group).regenerateSVG();
 }
 
+function closeEditor() {
+    elementByPath("editor", "div").hidden = true;
+}
+
+function editSelected() {
+    if (selected.size !== 1) return;
+    const card = Array.from(selected)[0];
+
+    centerSelection();
+    elementByPath("editor", "div").hidden = false;
+}
+
 function selectCard(card) {
     selected.add(card);
     cardToView.get(card).setSelected(true);
@@ -152,12 +186,24 @@ function deselectCard(card) {
     updateToolbar();
 }
 
+function beginLink() {
+    if (selected.size !== 1) return;
+    linking = Array.from(selected)[0];
+    updateToolbar();
+}
+
 function selectCardToggle(card) {
-    if (selectedGroups.length > 0) {
+    if (linking) {
+        const link = { id: nanoid(), cardA: linking.id, cardB: card.id };
+        PROJECT.links.push(link);
+        linking = undefined;
+        refreshSVGs();
+        console.log("LINK");
+    } else if (selectedGroups.length > 0) {
         const group = selectedGroups[0];
         if (group.cards.indexOf(card) >= 0) arrayDiscard(group.cards, card);
         else group.cards.push(card);
-        refreshGroups();
+        refreshSVGs();
         updateToolbar();
     } else {
         if (selected.has(card)) deselectCard(card);
@@ -204,9 +250,9 @@ function centerOrigin() {
 function centerSelection() {
     scene.locked = true;
     animateElementTransform(scene.container, .2).then(() => scene.locked = false);
-    const rect = boundRects(Array.from(selected).map((card) => new DOMRect(card.position.x, card.position.y, cellWidth, cellHeight)));
+    const rect = boundCards(Array.from(selected));
     padRect(rect, 64);
-    scene.frameRect(rect);
+    scene.frameRect(rect, .25, 1);
 }
 
 /** 
@@ -223,7 +269,7 @@ function groupSelection() {
     const color = `rgb(${randomInt(0, 255)} ${randomInt(0, 255)} ${randomInt(0, 255)})`;
     const group = { cards, color };
     groups.push(group);
-    refreshGroups();
+    refreshSVGs();
     selectGroups([group]);
 }
 
@@ -243,10 +289,16 @@ function dragGroups(event) {
     selectGroups(Array.from(groups));
 }
 
-function refreshGroups() {
+function refreshSVGs() {
     groups.forEach((group) => {
         const view = groupToView.get(group) || new DominoGroupView(group);
         groupToView.set(group, view);
+        view.regenerateSVG();
+    });
+
+    PROJECT.links.forEach((link) => {
+        const view = linkToView.get(link) || new DominoLinkView(link);
+        linkToView.set(link, view);
         view.regenerateSVG();
     });
 }
@@ -261,6 +313,11 @@ function boundCard(card) {
     );
 }
 
+/** @param {DominoDataCard} card */
+function cardCenter(card) {
+    return getRectCenter(boundCard(card));
+}
+
 /** @param {DominoDataCard[]} cards */
 function boundCards(cards) {
     return boundRects(cards.map(boundCard));
@@ -268,6 +325,57 @@ function boundCards(cards) {
 
 function gridSize(cells, cellWidth, cellGap) {
     return cellWidth + (cells - 1) * (cellWidth + cellGap);
+}
+
+function getCardFromId(cardId) {
+    return PROJECT.cards.find((card) => card.id === cardId);
+}
+
+class DominoLinkView {
+    /** @param {DominoDataLink} link */
+    constructor(link) {
+        this.link = link;
+        this.root = svg("svg", { class: "link" });
+        this.selected = false;
+
+        const background = document.getElementById("groups");
+        background.appendChild(this.root);
+    }
+
+    dispose() {
+        this.root.remove();
+    }
+
+    regenerateSVG() {
+        while (this.root.children.length > 0) this.root.children[0].remove();
+        const [cardA, cardB] = [getCardFromId(this.link.cardA), getCardFromId(this.link.cardB)];
+        
+        const { x, y, width, height } = boundCards([cardA, cardB]);
+        const rect = { x, y, width, height };
+
+        const { x: x1, y: y1 } = cardCenter(cardA);
+        const { x: x2, y: y2 } = cardCenter(cardB);
+        const line = { x1, y1, x2, y2 };
+
+        padRect(rect, 8);
+        const main = svg("line", { ...line, stroke: "magenta" });
+        
+        //padRect(rect, 8);           
+        //this.selectElement = svg("line", {...rect, rx: 24, fill: "gray", "class": "selection-flash" });
+        
+        //this.root.appendChild(this.selectElement);
+        this.root.appendChild(main);
+
+        {
+            const { x, y, width, height } = this.root.getBBox();
+            this.root.setAttributeNS(null, "width", width.toString());
+            this.root.setAttributeNS(null, "height", height.toString());
+            this.root.setAttributeNS(null, "viewBox", `${x} ${y} ${width} ${height}`);
+            this.root.setAttributeNS(null, "transform", translationMatrix({ x, y }).toString());
+        }
+
+        //this.setHighlight(this.selected);
+    }
 }
 
 class DominoGroupView {
@@ -405,7 +513,7 @@ class DominoCardView {
     regenerate() {
         if (!this.card) return;
         setElementTransform(this.rootElement, translationMatrix(this.card.position));
-        this.textElement.innerHTML = this.card.text;
+        this.textElement.innerHTML = parseFakedown(this.card.text);
 
         const bounds = boundCard(this.card);
         this.rootElement.style.width = `${bounds.width}px`;
@@ -443,7 +551,7 @@ class DominoCardView {
             const bounds = boundCard(this.card);
             target.style.width = `${bounds.width}px`;
             target.style.height = `${bounds.height}px`;
-            refreshGroups();
+            refreshSVGs();
         });
         gesture.on("pointerup", (event) => {
             const bounds = boundCard(this.card);
@@ -454,7 +562,7 @@ class DominoCardView {
             animateElementSize(this.rootElement, .1).then(() => target.remove());
             target.remove();
 
-            refreshGroups();
+            refreshSVGs();
         });
     }
 
@@ -488,7 +596,7 @@ class DominoCardView {
 
             // TODO: this has gotta have a bigger system for updating
             // on drag and during snap animation etc
-            refreshGroups();
+            refreshSVGs();
         });
         drag.on("pointerup", (event) => {
             const mouse = this.scene.mouseEventToSceneTransform(event);
@@ -502,7 +610,7 @@ class DominoCardView {
             this.setCursor("grab");
 
             // TODO:
-            refreshGroups();
+            refreshSVGs();
         });
 
         this.setCursor("grabbing");
@@ -651,13 +759,13 @@ class PanningScene {
         setElementTransform(this.container, this.transform);
     }
 
-    frameRect(rect) {
+    frameRect(rect, minScale=.25, maxScale=2) {
         const bounds = this.viewport.getBoundingClientRect();
 
         // find scale that contains all width, all height, and is within limits
         const sx = bounds.width / rect.width;
         const sy = bounds.height / rect.height;
-        const scale = clamp(Math.min(sx, sy), .25, 2);
+        const scale = clamp(Math.min(sx, sy), minScale, maxScale);
 
         // find translation that centers the rect in the viewport
         const ex = (1/scale - 1/sx) * bounds.width * .5;
@@ -684,3 +792,21 @@ class PanningScene {
     }
 }
 
+function fakedownToTag(text, fd, tag) {
+    const pattern = new RegExp(`${fd}([^${fd}]+)${fd}`, 'g');
+    return text.replace(pattern, `<${tag}>$1</${tag}>`);
+}
+
+function parseFakedown(text) {
+    if (text.startsWith('`'))
+        return `<pre>${text.slice(1)}</pre>`;
+    text = text.replace(/([^-])--([^-])/g, '$1—$2');
+    text = fakedownToTag(text, '##', 'h3');
+    text = fakedownToTag(text, '~~', 's');
+    text = fakedownToTag(text, '__', 'strong');
+    text = fakedownToTag(text, '\\*\\*', 'strong');
+    text = fakedownToTag(text, '_', 'em');
+    text = fakedownToTag(text, '\\*', 'em');
+    text = text.replace(/\n/g, '<br>');
+    return text;
+}

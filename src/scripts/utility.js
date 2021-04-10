@@ -218,6 +218,16 @@ function padRect(rect, padding) {
 }
 
 /**
+ * @param {Rect} rect 
+ */
+function getRectCenter(rect) {
+    return {
+        x: rect.x + rect.width * .5,
+        y: rect.y + rect.height * .5,
+    }
+}
+
+/**
  * @param {Rect} rect
  * @param {{ x: number, y: number }} point 
  */
@@ -226,6 +236,19 @@ function rectContainsPoint(rect, point) {
         && point.y >= rect.y
         && point.x <  rect.x + rect.width
         && point.y <  rect.y + rect.height;
+}
+
+/**
+ * @param {Rect} a 
+ * @param {Rect} b 
+ */
+function rectsOverlap(a, b) {
+    const outside = a.x + a.width  > b.x
+                 || a.y + a.height > b.y
+                 || a.x > b.width  + b.x
+                 || a.y > b.height + b.y;
+
+    return !outside;
 }
 
 /**

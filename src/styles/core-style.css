@@ -1,5 +1,5 @@
 :root {
-    --selection-color: rgba(106, 90, 205, 50%);
+    --selection-color: rgb(106, 90, 205);
     --group-color: rgba(205, 90, 119, 0.5);
 }
 
@@ -35,6 +35,9 @@ body {
 .card-root {
     position: absolute;
     width: 240px; height: 144px;
+
+    border-radius: .5em;
+    box-shadow: 0 3px 0 black;
 }
 
 .card-body {
@@ -45,8 +48,6 @@ body {
 
     /* tiny curve on corners */
     border-radius: .5em;
-    /* thick black line below */
-    border-bottom: 3px solid black;
 
     font-family: "Lora", sans-serif;
     display: flex;
@@ -91,7 +92,7 @@ body {
     margin: 0;
 
     left: 50%; bottom: 0;
-    transform: translate(-50%, calc(50% - 3px));
+    transform: translate(-50%, 50%);
 
     font-size: 1rem;
     column-gap: .75em;
@@ -123,8 +124,7 @@ body {
 }
 
 .card-root.selected {
-    /* thick black line */
-    outline: 8px solid var(--selection-color);
+    box-shadow: 0 0 0 8px var(--selection-color);
 }
 
 /* main toolbar */
@@ -177,12 +177,11 @@ body {
     background: var(--group-color);
 }
 
-svg.group {
+#groups > svg {
     position: absolute;
-    mix-blend-mode: screen;
-    opacity: 1;
     z-index: -2;
     pointer-events: none;
+    mix-blend-mode: screen;
 }
 
 svg > * {
