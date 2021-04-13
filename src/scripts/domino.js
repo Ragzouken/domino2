@@ -1,9 +1,16 @@
 /**
+ * @typedef {Object} DominoDataCardIcon
+ * @property {string} icon
+ * @property {string} action
+ */
+
+/**
  * @typedef {Object} DominoDataCard
  * @property {string} id
  * @property {Vector2} position
  * @property {Vector2} size
  * @property {string} text
+ * @property {DominoDataCardIcon[]} icons
  */
 
 /**

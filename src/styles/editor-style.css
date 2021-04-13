@@ -118,7 +118,7 @@
 }
 
 /* editor icons page styles */
-.editor-page[data-page="icons"] {
+.editor-page[data-tab-body="editor/icons"] {
     display: grid;
 
     grid-template-columns: repeat(4, 1fr);

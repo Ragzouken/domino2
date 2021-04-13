@@ -23,9 +23,13 @@ let selectedGroups = [];
 let scene;
 /** @type {DominoDataCard} */
 let linking;
+/** @type {CardEditor} */
+let cardEditor;
 
 async function test() {
     initui();
+
+    cardEditor = new CardEditor();
 
     scene = new PanningScene(document.getElementById("scene"));
 
@@ -41,7 +45,8 @@ async function test() {
             id: nanoid(),
             position,
             size: { x: 2, y: 2 },
-            text: "new card :)"
+            text: "new card :)",
+            icons: [],
         }
 
         insertCard(scene, card);
@@ -57,6 +62,7 @@ async function test() {
             position: { x, y }, 
             size: { x: w, y: h },
             text: "hello <b>this</b> is a <i>domino</i> test card text bla bla bla bla bla",
+            icons: [],
         };
 
         insertCard(scene, card);
@@ -78,15 +84,6 @@ async function test() {
     setActionHandler("group/select", selectGroupCards);
 
     setActionHandler("editor/close", closeEditor);
-
-    const editorText = elementByPath("editor/text", "textarea");
-    editorText.addEventListener("input", () => {
-        if (selected.size !== 1) return;
-        const card = Array.from(selected)[0];
-
-        card.text = editorText.value;
-        cardToView.get(card).regenerate();
-    });
 }
 
 function updateToolbar() {
@@ -104,6 +101,10 @@ function updateToolbar() {
     cardToView.forEach((view, card) => view.setSelected(active.has(card)));
 }
 
+/** 
+ * @param {PanningScene} scene
+ * @param {DominoDataCard} card
+ */
 function insertCard(scene, card) {
     PROJECT.cards.push(card);
     const view = new DominoCardView(scene);
@@ -160,7 +161,7 @@ function recolorGroup() {
 }
 
 function closeEditor() {
-    elementByPath("editor", "div").hidden = true;
+    cardEditor.close();
 }
 
 function editSelected() {
@@ -168,7 +169,7 @@ function editSelected() {
     const card = Array.from(selected)[0];
 
     centerSelection();
-    elementByPath("editor", "div").hidden = false;
+    cardEditor.open(card);
 }
 
 function selectCard(card) {
@@ -444,12 +445,12 @@ class DominoCardView {
         this.textElement = html("div", { class: "card-text" });
         const resize = svg("svg", { class: "resize-handle" }, svg("polygon", { points: "0,32 32,32 32,0" }));
         const body = html("div", { class: "card-body" }, this.textElement, resize);
-        const icons = html("div", { class: "card-icon-bar" }, html("a", {}, "🥰"), html("a"), html("a"), html("a"));
-        this.rootElement = html("div", { class: "card-root" }, body, icons);
+        this.iconElements = [0, 1, 2, 3].map((i) => html("a"));
+        const iconbar = html("div", { class: "card-icon-bar" }, ...this.iconElements);
+        this.rootElement = html("div", { class: "card-root" }, body, iconbar);
 
-        icons.children[0].addEventListener("click", (event) => {
-            killEvent(event);
-            //deleteCard(this.card);
+        this.iconElements.forEach((icon, index) => {
+            icon.addEventListener("click", (event) => this.onIconClicked(event, index));
         });
         
         this.scene.container.appendChild(this.rootElement);
@@ -478,11 +479,9 @@ class DominoCardView {
 
         listen(this.rootElement, "dblclick", (event) => {
             killEvent(event);
-            /*
             deselectCards();
             selectCard(this.card);
-            centerSelection();
-            */
+            editSelected();
         });
     }
 
@@ -518,6 +517,22 @@ class DominoCardView {
         const bounds = boundCard(this.card);
         this.rootElement.style.width = `${bounds.width}px`;
         this.rootElement.style.height = `${bounds.height}px`;
+
+        this.card.icons.forEach((data, i) => {
+            const element = this.iconElements[i];
+            element.innerHTML = data.icon;
+            element.href = data.action;
+            element.classList.toggle('blank', data.icon === '');
+            element.classList.toggle('cosmetic', data.action === '');
+        });
+    }
+
+    /** 
+     * @param {MouseEvent} event
+     * @param {number} index
+     */
+    onIconClicked(event, index) {
+
     }
 
     /** @param {PointerEvent} event */

@@ -22,6 +22,8 @@ html
             include scripts/domino.js
         script(id="test.js")
             include scripts/test.js
+        script(id="editor.js" data-editor-only)
+            include scripts/editor.js
         script(id="main.js")
             include scripts/main.js
     body(onload="start()").no-select
