@@ -51,4 +51,17 @@ class CardEditor {
 
         cardToView.get(card).regenerate();
     }
+
+    /** @param {ClipboardEvent} event */
+    async paste(event) {
+        if (!this.card) return;
+
+        const image = await dataTransferToImage(event.clipboardData);
+
+        if (image) {
+            this.card.image = image;
+            this.pushData(this.card);
+            killEvent(event);
+        }
+    }
 }

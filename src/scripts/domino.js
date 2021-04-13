@@ -11,6 +11,7 @@
  * @property {Vector2} size
  * @property {string} text
  * @property {DominoDataCardIcon[]} icons
+ * @property {string?} image
  */
 
 /**

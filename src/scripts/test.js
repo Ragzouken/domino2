@@ -84,6 +84,9 @@ async function test() {
     setActionHandler("group/select", selectGroupCards);
 
     setActionHandler("editor/close", closeEditor);
+    
+    // image pasting
+    window.addEventListener('paste', (event) => cardEditor.paste(event));
 }
 
 function updateToolbar() {
@@ -444,10 +447,10 @@ class DominoCardView {
         this.scene = scene;
         this.textElement = html("div", { class: "card-text" });
         const resize = svg("svg", { class: "resize-handle" }, svg("polygon", { points: "0,32 32,32 32,0" }));
-        const body = html("div", { class: "card-body" }, this.textElement, resize);
+        this.bodyElement = html("div", { class: "card-body" }, this.textElement, resize);
         this.iconElements = [0, 1, 2, 3].map((i) => html("a"));
         const iconbar = html("div", { class: "card-icon-bar" }, ...this.iconElements);
-        this.rootElement = html("div", { class: "card-root" }, body, iconbar);
+        this.rootElement = html("div", { class: "card-root" }, this.bodyElement, iconbar);
 
         this.iconElements.forEach((icon, index) => {
             icon.addEventListener("click", (event) => this.onIconClicked(event, index));
@@ -525,6 +528,9 @@ class DominoCardView {
             element.classList.toggle('blank', data.icon === '');
             element.classList.toggle('cosmetic', data.action === '');
         });
+
+        this.bodyElement.style.setProperty('background-image', this.card.image ? `url(${this.card.image})` : '');
+        this.bodyElement.classList.toggle('has-image', !!this.card.image);
     }
 
     /** 
@@ -824,4 +830,72 @@ function parseFakedown(text) {
     text = fakedownToTag(text, '\\*', 'em');
     text = text.replace(/\n/g, '<br>');
     return text;
+}
+
+const imageSize = [512, 512];
+
+async function fileToCompressedImageURL(file) {
+    const url = await dataURLFromFile(file);
+    const dataURL = await compressImageURL(url, 0.2, imageSize);
+    return dataURL;
+}
+
+async function dataTransferToImage(dt) {
+    const files = filesFromDataTransfer(dt);
+    const element = elementFromDataTransfer(dt);
+    if (files.length > 0) {
+        return await fileToCompressedImageURL(files[0]);
+    } else if (element && element.nodeName === 'IMG') {
+        return await compressImageURL(element.src, .2, imageSize);
+    }
+}
+
+function filesFromDataTransfer(dataTransfer) {
+    const clipboardFiles = 
+        Array.from(dataTransfer.items || [])
+        .filter(item => item.kind === 'file')
+        .map(item => item.getAsFile());
+    return clipboardFiles.concat(...(dataTransfer.files || []));
+}
+
+function elementFromDataTransfer(dataTransfer) {
+    const html = dataTransfer.getData('text/html');
+    return html && stringToElement(html);
+}
+
+async function compressImageURL(url, quality, size) {
+    const image = document.createElement("img");
+    image.crossOrigin = "true";
+    const canvas = document.createElement("canvas");
+
+    const [tw, th] = size;
+    canvas.width = tw;
+    canvas.height = th;
+
+    return new Promise((resolve, reject) => {
+        image.onload = () => {
+            const scale = Math.max(tw / image.width, th / image.height);
+            const [fw, fh] = [image.width * scale, image.height * scale];
+            const [ox, oy] = [(tw - fw)/2, (th - fh)/2];
+
+            const context = canvas.getContext('2d');
+            context.drawImage(image, ox, oy, fw, fh);
+            const url = canvas.toDataURL('image/jpeg', quality);
+
+            console.log(`${url.length}B`);
+            resolve(url);
+        };
+        image.onerror = () => resolve(undefined);
+        image.src = url;
+    });
+}
+
+function stringToDocument(string) {
+    const template = document.createElement('template');
+    template.innerHTML = string;
+    return template.content;
+}
+
+function stringToElement(string) {
+    return stringToDocument(string).children[0];
 }
