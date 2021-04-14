@@ -2,12 +2,26 @@ class CardEditor {
     constructor() {
         this.container = elementByPath("editor", "div");
         this.textInput = elementByPath("editor/text", "textarea");
+        this.altTextInput = elementByPath("editor/image/alt", "textarea");
 
         this.iconIconInputs = /** @type {HTMLInputElement[]} */ ([1, 2, 3, 4].map((i) => ONE(`#editor-icon-select-${i}`)));
         this.iconActionInputs = /** @type {HTMLInputElement[]} */ ([1, 2, 3, 4].map((i) => ONE(`#editor-icon-command-${i}`)));
 
-        const inputs = [this.textInput, ...this.iconIconInputs, ...this.iconActionInputs];
+        const inputs = [this.textInput, ...this.iconIconInputs, ...this.iconActionInputs, this.altTextInput];
         inputs.forEach((input) => input.addEventListener("input", () => this.pushData(this.card)));
+
+        const imageInput = elementByPath("editor/image", "input");
+        setActionHandler("editor/image/upload", () => imageInput.click());
+        listen(imageInput, "input", async () => {
+            this.card.image = await fileToCompressedImageURL(imageInput.files[0]);
+            imageInput.value = "";
+            this.pushData(this.card);
+        });
+
+        setActionHandler("editor/image/remove", () => {
+            this.card.image = undefined;
+            this.pushData(this.card);
+        });
     }
 
     /** @param {DominoDataCard} card */
@@ -25,6 +39,7 @@ class CardEditor {
     /** @param {DominoDataCard} card */
     pullData(card) {
         this.textInput.value = card.text;
+        this.altTextInput.value = card.alttext || "";
 
         card.icons.slice(0, 4).forEach((icon, i) => {
             this.iconIconInputs[i].value = icon.icon;
@@ -48,6 +63,7 @@ class CardEditor {
                 action: this.iconActionInputs[i].value,
             };
         });
+        card.alttext = this.altTextInput.value;
 
         cardToView.get(card).regenerate();
     }

@@ -62,6 +62,7 @@ html
                     div(data-tab-toggle="editor/text" data-tab-default) TEXT
                     div(data-tab-toggle="editor/icons") ICONS
                     div(data-tab-toggle="editor/style") STYLE
+                    div(data-tab-toggle="editor/image") IMAGE
                 .editor-page.tab-page(data-tab-body="editor/text")
                     textarea#content-input(data-path="editor/text")
                 .editor-page.tab-page(data-tab-body="editor/icons")
@@ -70,12 +71,12 @@ html
                         input(id=`editor-icon-command-${row}` type="text").icon-command
                 .editor-page(data-tab-body="editor/style")
                     #type-select.button-list(data-export-clear)
+                .editor-page(data-tab-body="editor/image")
                     .button-list
-                        button#upload-image upload image
-                    .button-list
-                        input#alt-text(type="text" placeholder="alt text")
-                        button#remove-image remove image
-                        input#upload-image-input(type="file" accept="image/*", hidden)
+                        button(data-action="editor/image/upload") upload image
+                        button(data-action="editor/image/remove") remove image
+                        input(data-path="editor/image" type="file" accept="image/*" hidden)
+                    textarea(data-path="editor/image/alt" placeholder="alt text")
         script#project-data(type="text/json")
             include project-data.json
         script loadData();

@@ -86,7 +86,7 @@ async function test() {
     setActionHandler("editor/close", closeEditor);
     
     // image pasting
-    window.addEventListener('paste', (event) => cardEditor.paste(event));
+    window.addEventListener("paste", (event) => cardEditor.paste(event));
 }
 
 function updateToolbar() {

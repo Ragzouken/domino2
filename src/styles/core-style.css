@@ -55,6 +55,7 @@ body {
     word-wrap: break-word;
 
     background-size: cover;
+    background-position: center;
 }
 
 .card-text {

@@ -12,6 +12,7 @@
  * @property {string} text
  * @property {DominoDataCardIcon[]} icons
  * @property {string?} image
+ * @property {string?} alttext
  */
 
 /**
