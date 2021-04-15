@@ -58,21 +58,25 @@ html
         #editor-blocker.full(data-action="editor/close" data-path="editor" data-blocks-clicks hidden)
             #editor-panel(data-block-clicks)
                 .tab-bar
-                    div(data-action="editor/close") ◀ 
                     div(data-tab-toggle="editor/text" data-tab-default) TEXT
                     div(data-tab-toggle="editor/icons") ICONS
                     div(data-tab-toggle="editor/style") STYLE
                     div(data-tab-toggle="editor/image") IMAGE
                 .editor-page.tab-page(data-tab-body="editor/text")
-                    textarea#content-input(data-path="editor/text")
+                    .button-row
+                        button(data-action="editor/text/bold") bold
+                        button(data-action="editor/text/italic") italic
+                        button(data-action="editor/text/strike") strike
+                        button(data-action="editor/text/header") header
+                    textarea(data-path="editor/text")
                 .editor-page.tab-page(data-tab-body="editor/icons")
                     each row in [1, 2, 3, 4]
                         input(id=`editor-icon-select-${row}` type="text").icon-select
                         input(id=`editor-icon-command-${row}` type="text").icon-command
                 .editor-page(data-tab-body="editor/style")
-                    #type-select.button-list(data-export-clear)
+                    textarea(data-path="editor/style")
                 .editor-page(data-tab-body="editor/image")
-                    .button-list
+                    .button-row
                         button(data-action="editor/image/upload") upload image
                         button(data-action="editor/image/remove") remove image
                         input(data-path="editor/image" type="file" accept="image/*" hidden)

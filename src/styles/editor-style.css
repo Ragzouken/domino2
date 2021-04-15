@@ -150,3 +150,14 @@
 textarea {
     flex: 1;
 }
+
+.button-row {
+    display: flex;
+    flex-direction: row;
+    align-items: stretch;
+    gap: 1em;
+}
+
+.button-row > button {
+    flex: 1;
+}

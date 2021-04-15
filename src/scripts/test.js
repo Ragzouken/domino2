@@ -529,7 +529,16 @@ class DominoCardView {
             element.classList.toggle('cosmetic', data.action === '');
         });
 
-        this.bodyElement.style.setProperty('background-image', this.card.image ? `url(${this.card.image})` : '');
+        if (this.card.style) {
+            this.bodyElement.setAttribute("style", this.card.style);
+        } else {
+            this.bodyElement.removeAttribute("style");
+        }
+
+        if (this.card.image) {
+            this.bodyElement.style.setProperty('background-image', `url(${this.card.image})`);
+        }
+
         this.bodyElement.classList.toggle('has-image', !!this.card.image);
     }
 

@@ -87,22 +87,24 @@ body {
 
 .card-icon-bar {
     position: absolute;
-    
-    display: grid;
-    gap: .5em;
-    margin: 0;
-
     left: 50%; bottom: 0;
     transform: translate(-50%, 50%);
 
+    display: flex;
+    justify-content: space-evenly;
+    
+    padding: 1em;
+    margin: 0;
+    width: 100%;
+
     font-size: 1rem;
-    column-gap: .75em;
+
+    pointer-events: none;
 }
 
 .card-icon-bar > a {
     width: 2em;
     height: 2em;
-    grid-row: 1;
 
     padding: 0;
     
@@ -110,7 +112,18 @@ body {
     align-items: center;
     justify-content: center;
     text-decoration: none;
+
+    pointer-events: initial;
+
+    transition: transform .1s ease-in-out;
 }
+
+.card-icon-bar > *:hover  { transform: scale(1.5); }
+.card-icon-bar > *:active { transform: scale(2);   }
+/* don't animate cosmetic card icons */
+.card-icon-bar > *.cosmetic { cursor: initial; transform: unset; }
+/* don't respond to blank card icons */
+.card-icon-bar > *.blank { pointer-events: none; transform: unset; }
 
 .target {
     position: absolute;
