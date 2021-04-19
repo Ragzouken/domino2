@@ -18,9 +18,10 @@ async function start() {
     const save = localStorage.getItem("domino2/test-save");
     const json = (player || !save) ? dataElement.innerHTML : save;
     const data = JSON.parse(json);
-    PROJECT = data;
 
     await test();
+    boardView.loadProject(data);
+    refreshSVGs();
 
     if (player) {
         // data

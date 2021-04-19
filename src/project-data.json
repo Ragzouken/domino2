@@ -1,9 +1,1 @@
-{
-    "details": {
-        "id": "EMPTY.PROJECT",
-        "name": "project",
-        "title": "empty project"
-    },
-    "cards": [],
-    "links": []
-}
+{"details":{"id":"EMPTY.PROJECT","name":"project","title":"empty project"},"cards":[{"id":"card:0","position":{"x":512,"y":240},"size":{"x":4,"y":2},"text":"hello **this** is a *domino* test card text bla bla bla bla bla","icons":[]},{"id":"card:1","position":{"x":768,"y":400},"size":{"x":2,"y":4},"text":"hello **this** is a *domino* test card text bla bla bla bla bla","icons":[]},{"id":"card:2","position":{"x":1024,"y":480},"size":{"x":2,"y":2},"text":"hello **this** is a *domino* test card text bla bla bla bla bla","icons":[]},{"id":"card:3","position":{"x":512,"y":400},"size":{"x":2,"y":3},"text":"hello **this** is a *domino* test card text bla bla bla bla bla","icons":[]},{"id":"card:4","position":{"x":1024,"y":320},"size":{"x":2,"y":2},"text":"hello **this** is a *domino* test card text bla bla bla bla bla","icons":[]}],"groups":[{"cards":["card:1","card:2"],"color":"rgb(119 6 80)"}],"links":[]}

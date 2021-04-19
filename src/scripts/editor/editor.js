@@ -1,5 +1,3 @@
-
-
 function saveAs(blob, name) {
     const element = document.createElement("a");
     const url = window.URL.createObjectURL(blob);
@@ -21,12 +19,12 @@ function createStandalonePlayer(projectData) {
 }
 
 const projectToHTML = () => {
-    const clone = createStandalonePlayer(PROJECT);
+    const clone = createStandalonePlayer(boardView.projectData);
     return clone.outerHTML;
 }
 
 setActionHandler("project/export/html", async () => {
-    const name = PROJECT.details.name + ".html";
+    const name = boardView.projectData.details.name + ".html";
     const blob = textToBlob(projectToHTML(), "text/html");
     saveAs(blob, name);
 });

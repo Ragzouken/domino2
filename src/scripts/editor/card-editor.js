@@ -73,7 +73,7 @@ class CardEditor {
         card.alttext = this.altTextInput.value;
         card.style = this.styleInput.value;
 
-        cardToView.get(card).regenerate();
+        boardView.cardToView.get(card).regenerate();
     }
 
     /** @param {ClipboardEvent} event */

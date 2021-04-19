@@ -1,12 +1,24 @@
-/** @type {Map<DominoDataCard, DominoCardView>} */
-const cardToView = new Map();
-/** @type {Map<DominoCardGroup, DominoGroupView>} */
-const groupToView = new Map();
-/** @type {Map<DominoDataLink, DominoLinkView>} */
-const linkToView = new Map();
+class DominoBoardView {
+    constructor() {
+        /** @type {Map<DominoDataCard, DominoCardView>} */
+        this.cardToView = new Map();
+        /** @type {Map<DominoDataGroup, DominoGroupView>} */
+        this.groupToView = new Map();
+        /** @type {Map<DominoDataLink, DominoLinkView>} */
+        this.linkToView = new Map();
+    }
 
-/** @type {DominoDataProject} */
-let PROJECT = JSON.parse(JSON.stringify(EMPTY_PROJECT_DATA));
+    /** @param {DominoDataProject} projectData */
+    loadProject(projectData) {
+        this.projectData = projectData;
+
+        this.projectData.cards.forEach((card) => {
+            const view = new DominoCardView(scene);
+            view.setCard(card);
+            this.cardToView.set(card, view);
+        });
+    }
+}
 
 class PanningScene {
     get hidden() { return this.container.hidden; }

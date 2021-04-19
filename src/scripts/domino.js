@@ -16,6 +16,12 @@
  * @property {string?} style
  */
 
+/** 
+ * @typedef {Object} DominoDataGroup
+ * @property {string[]} cards
+ * @property {string} color
+ */
+
 /**
  * @typedef {Object} DominoDataLink
  * @property {string} id
@@ -34,6 +40,7 @@
  * @typedef {Object} DominoDataProject
  * @property {DominoDataProjectDetails} details
  * @property {DominoDataCard[]} cards
+ * @property {DominoDataGroup[]} groups
  * @property {DominoDataLink[]} links
  */
 
@@ -45,5 +52,6 @@ const EMPTY_PROJECT_DATA = {
         title: "empty project"
     },
     cards: [],
+    groups: [],
     links: []
 }

@@ -1,13 +1,16 @@
 /** @type {Set<DominoDataCard>} */
 const selected = new Set();
-/** @type {DominoCardGroup[]} */
+/** @type {DominoDataGroup[]} */
 let selectedGroups = [];
 /** @type {DominoDataCard} */
 let linking;
 /** @type {CardEditor} */
 let cardEditor;
+/** @type {DominoBoardView} */
+let boardView;
 
 async function test() {
+    boardView = new DominoBoardView();
     cardEditor = new CardEditor();
 
     listen(scene.viewport, "dblclick", (event) => {
@@ -28,22 +31,6 @@ async function test() {
 
         insertCard(scene, card);
     });
-    
-    for (let i = 0; i < 5; ++i) {
-        const x = randomInt(0, 4) * cellWidth;
-        const y = randomInt(0, 4) * cellHeight;
-        const h = randomInt(2, 4);
-        const w = randomInt(2, h);
-        const card = {
-            id: `card:${i}`,
-            position: { x, y }, 
-            size: { x: w, y: h },
-            text: "hello <b>this</b> is a <i>domino</i> test card text bla bla bla bla bla",
-            icons: [],
-        };
-
-        insertCard(scene, card);
-    }
 
     setActionHandler("global/home", centerOrigin);
 
@@ -66,6 +53,12 @@ async function test() {
     window.addEventListener("paste", (event) => cardEditor.paste(event));
 }
 
+/** @param {DominoDataGroup} group */
+function getGroupCards(group) {
+    const cards = new Set(group.cards);
+    return boardView.projectData.cards.filter((card) => cards.has(card.id));
+}
+
 function updateToolbar() {
     const selection = selected.size > 0;
     const selectedGroup = selectedGroups.length > 0;
@@ -77,8 +70,8 @@ function updateToolbar() {
     //elementByPath("selection/group", "div").hidden = selected.size === 1;
 
     // selections
-    const active = selectedGroups.length > 0 ? new Set(selectedGroups[0].cards) : selected;
-    cardToView.forEach((view, card) => view.setSelected(active.has(card)));
+    const active = selectedGroups.length > 0 ? new Set(getGroupCards(selectedGroups[0])) : selected;
+    boardView.cardToView.forEach((view, card) => view.setSelected(active.has(card)));
 }
 
 /** 
@@ -86,21 +79,21 @@ function updateToolbar() {
  * @param {DominoDataCard} card
  */
 function insertCard(scene, card) {
-    PROJECT.cards.push(card);
+    boardView.projectData.cards.push(card);
     const view = new DominoCardView(scene);
     view.setCard(card);
-    cardToView.set(card, view);
+    boardView.cardToView.set(card, view);
 }
 
 function deleteCard(card) {
-    arrayDiscard(PROJECT.cards, card);
+    arrayDiscard(boardView.projectData.cards, card);
 
-    groups.forEach((group) => arrayDiscard(group.cards, card));
+    boardView.projectData.groups.forEach((group) => arrayDiscard(group.cards, card));
     refreshSVGs();
 
     deselectCard(card);
-    cardToView.get(card).rootElement.remove();
-    cardToView.delete(card);
+    boardView.cardToView.get(card).rootElement.remove();
+    boardView.cardToView.delete(card);
 }
 
 function deselectAll() {
@@ -110,14 +103,14 @@ function deselectAll() {
 }
 
 function deselectCards() {
-    selected.forEach((card) => cardToView.get(card).setSelected(false));
+    selected.forEach((card) => boardView.cardToView.get(card).setSelected(false));
     selected.clear();
 
     updateToolbar();
 }
 
 function deselectGroup() {
-    selectedGroups.forEach((group) => groupToView.get(group).setHighlight(false));
+    selectedGroups.forEach((group) => boardView.groupToView.get(group).setHighlight(false));
     selectedGroups.length = 0;
     updateToolbar();
 }
@@ -129,15 +122,15 @@ function selectGroupCards() {
 
 function deleteGroup() {
     const group = selectedGroups.shift();
-    arrayDiscard(groups, group);
-    groupToView.get(group).dispose();
+    arrayDiscard(boardView.projectData.groups, group);
+    boardView.groupToView.get(group).dispose();
     deselectGroup();
 }
 
 function recolorGroup() {
     const group = selectedGroups[0];
     group.color = `rgb(${randomInt(0, 255)} ${randomInt(0, 255)} ${randomInt(0, 255)})`;
-    groupToView.get(group).regenerateSVG();
+    boardView.groupToView.get(group).regenerateSVG();
 }
 
 function closeEditor() {
@@ -154,7 +147,7 @@ function editSelected() {
 
 function selectCard(card) {
     selected.add(card);
-    cardToView.get(card).setSelected(true);
+    boardView.cardToView.get(card).setSelected(true);
 
     deselectGroup();
     updateToolbar();
@@ -162,7 +155,7 @@ function selectCard(card) {
 
 function deselectCard(card) {
     selected.delete(card);
-    cardToView.get(card).setSelected(false);
+    boardView.cardToView.get(card).setSelected(false);
 
     updateToolbar();
 }
@@ -176,7 +169,7 @@ function beginLink() {
 function selectCardToggle(card) {
     if (linking) {
         const link = { id: nanoid(), cardA: linking.id, cardB: card.id };
-        PROJECT.links.push(link);
+        boardView.projectData.links.push(link);
         linking = undefined;
         refreshSVGs();
         console.log("LINK");
@@ -195,12 +188,12 @@ function selectCardToggle(card) {
 function cycleGroup() {
     const current = selectedGroups.shift();
     selectedGroups.push(current);
-    groupToView.get(current).setHighlight(false);
-    groupToView.get(selectedGroups[0]).setHighlight(true);
+    boardView.groupToView.get(current).setHighlight(false);
+    boardView.groupToView.get(selectedGroups[0]).setHighlight(true);
     updateToolbar();
 }
 
-/** @param {DominoCardGroup[]} groups */
+/** @param {DominoDataGroup[]} groups */
 function selectGroups(groups) {
     const combined = new Set([...groups, ...selectedGroups]);
     const same = combined.size === selectedGroups.length && combined.size === groups.length;
@@ -213,7 +206,7 @@ function selectGroups(groups) {
         deselectCards();
         deselectGroup();
         selectedGroups.push(...groups);
-        groupToView.get(selectedGroups[0]).setHighlight(true);
+        boardView.groupToView.get(selectedGroups[0]).setHighlight(true);
         updateToolbar();
         
         if (prev === selectedGroups[0]) cycleGroup();
@@ -236,25 +229,16 @@ function centerSelection() {
     scene.frameRect(rect, .25, 1);
 }
 
-/** 
- * @typedef {Object} DominoCardGroup
- * @property {DominoDataCard[]} cards
- * @property {string} color
- */
-
-/** @type {DominoCardGroup[]} */
-const groups = [];
-
 function groupSelection() {
-    const cards = Array.from(selected);
+    const cards = Array.from(selected).map((card) => card.id);
     const color = `rgb(${randomInt(0, 255)} ${randomInt(0, 255)} ${randomInt(0, 255)})`;
     const group = { cards, color };
-    groups.push(group);
+    boardView.projectData.groups.push(group);
     refreshSVGs();
     selectGroups([group]);
 }
 
-/** @type {Map<SVGElement, DominoCardGroup>} */
+/** @type {Map<SVGElement, DominoDataGroup>} */
 const svgToGroup = new Map();
 
 function dragGroups(event) {
@@ -262,24 +246,24 @@ function dragGroups(event) {
     const svgs = overlapping.map((overlap) => overlap.closest("svg")).filter((svg) => svg !== null);
     const groups = new Set(svgs.map((svg) => svgToGroup.get(svg)));
 
-    groups.forEach((group) => {
-        group.cards.forEach((card) => {
-            cardToView.get(card).startDrag(event);
+    boardView.projectData.groups.forEach((group) => {
+        getGroupCards(group).forEach((card) => {
+            boardView.cardToView.get(card).startDrag(event);
         });
     });
     selectGroups(Array.from(groups));
 }
 
 function refreshSVGs() {
-    groups.forEach((group) => {
-        const view = groupToView.get(group) || new DominoGroupView(group);
-        groupToView.set(group, view);
+    boardView.projectData.groups.forEach((group) => {
+        const view = boardView.groupToView.get(group) || new DominoGroupView(group);
+        boardView.groupToView.set(group, view);
         view.regenerateSVG();
     });
 
-    PROJECT.links.forEach((link) => {
-        const view = linkToView.get(link) || new DominoLinkView(link);
-        linkToView.set(link, view);
+    boardView.projectData.links.forEach((link) => {
+        const view = boardView.linkToView.get(link) || new DominoLinkView(link);
+        boardView.linkToView.set(link, view);
         view.regenerateSVG();
     });
 }
@@ -309,7 +293,7 @@ function gridSize(cells, cellWidth, cellGap) {
 }
 
 function getCardFromId(cardId) {
-    return PROJECT.cards.find((card) => card.id === cardId);
+    return boardView.projectData.cards.find((card) => card.id === cardId);
 }
 
 class DominoLinkView {
@@ -361,7 +345,7 @@ class DominoLinkView {
 
 class DominoGroupView {
     /**
-     * @param {DominoCardGroup} group 
+     * @param {DominoDataGroup} group 
      */
     constructor(group) {
         this.group = group;
@@ -392,7 +376,7 @@ class DominoGroupView {
     regenerateSVG() {
         while (this.root.children.length > 0) this.root.children[0].remove();
 
-        const { x, y, width, height } = boundCards(this.group.cards);
+        const { x, y, width, height } = boundCards(getGroupCards(this.group));
         const rect = { x, y, width, height };
 
         padRect(rect, 8);
@@ -446,7 +430,7 @@ class DominoCardView {
             let drags;
 
             if (selected.has(this.card)) {
-                drags = Array.from(selected).map((card) => cardToView.get(card).startDrag(event));
+                drags = Array.from(selected).map((card) => boardView.cardToView.get(card).startDrag(event));
             } else {
                 //if (!event.shiftKey) deselectCards();
                 drags = [this.startDrag(event)];
