@@ -70,7 +70,7 @@ html
                         button(data-action="card-editor/text/italic") italic
                         button(data-action="card-editor/text/strike") strike
                         button(data-action="card-editor/text/header") header
-                    textarea(data-path="card-editor/text")
+                    textarea(data-path="card-editor/text" spellcheck="true")
                 .editor-page.tab-page(data-tab-body="card-editor/icons")
                     each row in [1, 2, 3, 4]
                         input(data-path=`card-editor/icons/${row}/icon` type="text").icon-select
@@ -82,7 +82,7 @@ html
                         button(data-action="card-editor/image/upload") upload image
                         button(data-action="card-editor/image/remove") remove image
                         input(data-path="card-editor/image" type="file" accept="image/*" hidden)
-                    textarea(data-path="card-editor/image/alt" placeholder="alt text")
+                    textarea(data-path="card-editor/image/alt" placeholder="alt text" spellcheck="true")
         script#project-data(type="text/json")
             include project-data.json
         script loadData();
