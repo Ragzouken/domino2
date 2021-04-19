@@ -10,7 +10,7 @@ html
             include styles/base-style.css
         style#core-style
             include styles/core-style.css
-        style#editor-style(data-editor-only)
+        style#editor-style
             include styles/editor-style.css
         // third party libraries
         // scripts
@@ -22,9 +22,9 @@ html
             include scripts/domino.js
         script(id="test.js")
             include scripts/test.js
-        script(id="editor/card-editor.js" data-editor-only)
+        script(id="editor/card-editor.js")
             include scripts/editor/card-editor.js
-        script(id="editor/editor.js" data-editor-only)
+        script(id="editor/editor.js")
             include scripts/editor/editor.js
         script(id="player.js")
             include scripts/player.js
@@ -57,7 +57,7 @@ html
                 .icon(data-action="group/select" title="select cards") 🎴
                 .icon(data-action="group/recolor" title="reroll color") 🎨
                 .icon(data-action="group/delete" title="delete group") 💥
-        .editor-blocker(data-action="card-editor/close" data-path="card-editor" data-blocks-clicks hidden data-editor-only)
+        .editor-blocker(data-action="card-editor/close" data-path="card-editor" data-blocks-clicks hidden)
             .editor-panel(data-block-clicks)
                 .tab-bar
                     div(data-tab-toggle="card-editor/text" data-tab-default) TEXT
