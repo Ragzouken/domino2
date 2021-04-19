@@ -1,1 +1,9 @@
-{}
+{
+    "details": {
+        "id": "EMPTY.PROJECT",
+        "name": "project",
+        "title": "empty project"
+    },
+    "cards": [],
+    "links": []
+}

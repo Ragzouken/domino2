@@ -22,14 +22,18 @@ html
             include scripts/domino.js
         script(id="test.js")
             include scripts/test.js
-        script(id="editor.js" data-editor-only)
-            include scripts/editor.js
+        script(id="editor/card-editor.js" data-editor-only)
+            include scripts/editor/card-editor.js
+        script(id="editor/editor.js" data-editor-only)
+            include scripts/editor/editor.js
+        script(id="player.js")
+            include scripts/player.js
         script(id="main.js")
             include scripts/main.js
     body(onload="start()").no-select
         #frame
-            #scene
-                #groups
+            #scene(data-empty)
+                #groups(data-empty)
         #toolbar(data-block-clicks)
             .toolbar-group.icon-bar
                 .icon.disabled(data-action="global/undo" title="undo") ↩
@@ -40,7 +44,7 @@ html
                 .icon#unlocked(data-action="global/lock" title="prevent accidental editing") 🔓
                 .icon#locked(data-action="global/unlock" title="enable editing" hidden) 🔒
                 .icon#open-about(data-action="global/menu" title="information & settings") 🔨
-                .icon
+                .icon(data-action="project/export/html" title="export html") 📦
 
             .toolbar-group.icon-bar(data-path="selection" hidden)
                 //.icon(data-action="selection/cancel" title="deselect") ❌
@@ -55,32 +59,32 @@ html
                 .icon(data-action="group/select" title="select cards") 🎴
                 .icon(data-action="group/recolor" title="reroll color") 🎨
                 .icon(data-action="group/delete" title="delete group") 💥
-        #editor-blocker.full(data-action="editor/close" data-path="editor" data-blocks-clicks hidden)
-            #editor-panel(data-block-clicks)
+        .editor-blocker(data-action="card-editor/close" data-path="card-editor" data-blocks-clicks hidden data-editor-only)
+            .editor-panel(data-block-clicks)
                 .tab-bar
-                    div(data-tab-toggle="editor/text" data-tab-default) TEXT
-                    div(data-tab-toggle="editor/icons") ICONS
-                    div(data-tab-toggle="editor/style") STYLE
-                    div(data-tab-toggle="editor/image") IMAGE
-                .editor-page.tab-page(data-tab-body="editor/text")
+                    div(data-tab-toggle="card-editor/text" data-tab-default) TEXT
+                    div(data-tab-toggle="card-editor/icons") ICONS
+                    div(data-tab-toggle="card-editor/style") STYLE
+                    div(data-tab-toggle="card-editor/image") IMAGE
+                .editor-page.tab-page(data-tab-body="card-editor/text")
                     .button-row
-                        button(data-action="editor/text/bold") bold
-                        button(data-action="editor/text/italic") italic
-                        button(data-action="editor/text/strike") strike
-                        button(data-action="editor/text/header") header
-                    textarea(data-path="editor/text")
-                .editor-page.tab-page(data-tab-body="editor/icons")
+                        button(data-action="card-editor/text/bold") bold
+                        button(data-action="card-editor/text/italic") italic
+                        button(data-action="card-editor/text/strike") strike
+                        button(data-action="card-editor/text/header") header
+                    textarea(data-path="card-editor/text")
+                .editor-page.tab-page(data-tab-body="card-editor/icons")
                     each row in [1, 2, 3, 4]
-                        input(id=`editor-icon-select-${row}` type="text").icon-select
-                        input(id=`editor-icon-command-${row}` type="text").icon-command
-                .editor-page(data-tab-body="editor/style")
-                    textarea(data-path="editor/style")
-                .editor-page(data-tab-body="editor/image")
+                        input(data-path=`card-editor/icons/${row}/icon` type="text").icon-select
+                        input(data-path=`card-editor/icons/${row}/action` type="text").icon-action
+                .editor-page(data-tab-body="card-editor/style")
+                    textarea(data-path="card-editor/style")
+                .editor-page(data-tab-body="card-editor/image")
                     .button-row
-                        button(data-action="editor/image/upload") upload image
-                        button(data-action="editor/image/remove") remove image
-                        input(data-path="editor/image" type="file" accept="image/*" hidden)
-                    textarea(data-path="editor/image/alt" placeholder="alt text")
+                        button(data-action="card-editor/image/upload") upload image
+                        button(data-action="card-editor/image/remove") remove image
+                        input(data-path="card-editor/image" type="file" accept="image/*" hidden)
+                    textarea(data-path="card-editor/image/alt" placeholder="alt text")
         script#project-data(type="text/json")
             include project-data.json
         script loadData();

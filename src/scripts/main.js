@@ -1,7 +1,32 @@
-async function start() {
-    console.log("start");
+const cellWidth = 256;
+const cellHeight = 160;
 
-    test();
+const cellGap = 16;
+const cellWidth2 = 112;
+const cellHeight2 = 64;
+
+/** @type {PanningScene} */
+let scene;
+
+async function start() {
+    initui();
+    scene = new PanningScene(document.getElementById("scene"));
+
+    const dataElement = ONE("#project-data");
+    const player = ONE("body").getAttribute("data-player") === "true";
+
+    const save = localStorage.getItem("domino2/test-save");
+    const json = (player || !save) ? dataElement.innerHTML : save;
+    const data = JSON.parse(json);
+    PROJECT = data;
+
+    await test();
+
+    if (player) {
+        // data
+    } else {
+        // data
+    }
 }
 
 async function loadData() {

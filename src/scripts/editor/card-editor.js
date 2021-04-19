@@ -1,33 +1,33 @@
 class CardEditor {
     constructor() {
-        this.container = elementByPath("editor", "div");
-        this.textInput = elementByPath("editor/text", "textarea");
-        this.altTextInput = elementByPath("editor/image/alt", "textarea");
-        this.styleInput = elementByPath("editor/style", "textarea");
+        this.container = elementByPath("card-editor", "div");
+        this.textInput = elementByPath("card-editor/text", "textarea");
+        this.altTextInput = elementByPath("card-editor/image/alt", "textarea");
+        this.styleInput = elementByPath("card-editor/style", "textarea");
 
-        this.iconIconInputs = /** @type {HTMLInputElement[]} */ ([1, 2, 3, 4].map((i) => ONE(`#editor-icon-select-${i}`)));
-        this.iconActionInputs = /** @type {HTMLInputElement[]} */ ([1, 2, 3, 4].map((i) => ONE(`#editor-icon-command-${i}`)));
+        this.iconIconInputs = /** @type {HTMLInputElement[]} */ ([1, 2, 3, 4].map((i) => elementByPath(`card-editor/icons/${i}/icon`, "input")));
+        this.iconActionInputs = /** @type {HTMLInputElement[]} */ ([1, 2, 3, 4].map((i) => elementByPath(`card-editor/icons/${i}/action`, "input")));
 
         const inputs = [this.textInput, ...this.iconIconInputs, ...this.iconActionInputs, this.altTextInput, this.styleInput];
         inputs.forEach((input) => input.addEventListener("input", () => this.pushData(this.card)));
 
-        const imageInput = elementByPath("editor/image", "input");
-        setActionHandler("editor/image/upload", () => imageInput.click());
+        const imageInput = elementByPath("card-editor/image", "input");
+        setActionHandler("card-editor/image/upload", () => imageInput.click());
         listen(imageInput, "input", async () => {
             this.card.image = await fileToCompressedImageURL(imageInput.files[0]);
             imageInput.value = "";
             this.pushData(this.card);
         });
 
-        setActionHandler("editor/image/remove", () => {
+        setActionHandler("card-editor/image/remove", () => {
             this.card.image = undefined;
             this.pushData(this.card);
         });
 
-        setActionHandler("editor/text/bold", () => this.wrapSelectedText("**", "**"));
-        setActionHandler("editor/text/italic", () => this.wrapSelectedText("*", "*"));
-        setActionHandler("editor/text/strike", () => this.wrapSelectedText("~~", "~~"));
-        setActionHandler("editor/text/header", () => this.wrapSelectedText("##", "##"));
+        setActionHandler("card-editor/text/bold", () => this.wrapSelectedText("**", "**"));
+        setActionHandler("card-editor/text/italic", () => this.wrapSelectedText("*", "*"));
+        setActionHandler("card-editor/text/strike", () => this.wrapSelectedText("~~", "~~"));
+        setActionHandler("card-editor/text/header", () => this.wrapSelectedText("##", "##"));
     }
 
     /** @param {DominoDataCard} card */
