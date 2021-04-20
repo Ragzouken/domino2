@@ -119,7 +119,7 @@ function deselectGroup() {
 
 function selectGroupCards() {
     const group = selectedGroups[0];
-    group.cards.forEach(selectCard);
+    getGroupCards(group).forEach(selectCard);
 }
 
 function deleteGroup() {
