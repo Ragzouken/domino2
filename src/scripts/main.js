@@ -15,9 +15,8 @@ async function start() {
     const dataElement = ONE("#project-data");
     const player = ONE("body").getAttribute("data-player") === "true";
 
-    const save = localStorage.getItem("domino2/test-save");
-    const json = (player || !save) ? dataElement.innerHTML : save;
-    const data = JSON.parse(json);
+    const save = await loadProject("TEST");
+    const data = (player || !save) ? JSON.parse(dataElement.innerHTML) : save;
 
     await test();
     boardView.loadProject(data);

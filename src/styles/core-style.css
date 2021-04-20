@@ -36,7 +36,7 @@ body {
     position: absolute;
     width: 240px; height: 144px;
 
-    border-radius: .5em;
+    border-radius: 8px;
     box-shadow: 0 3px 0 black;
 }
 
@@ -47,7 +47,7 @@ body {
     color: black;
 
     /* tiny curve on corners */
-    border-radius: .5em;
+    border-radius: 8px;
 
     font-family: "Lora", sans-serif;
     display: flex;
