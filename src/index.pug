@@ -34,8 +34,9 @@ html
             include scripts/main.js
     body(onload="start()").no-select
         #frame
-            #scene(data-empty)
-                #groups(data-empty)
+            #scene
+                #svgs(data-empty)
+                #cards(data-empty)
         #toolbar(data-block-clicks)
             .toolbar-group.icon-bar
                 .icon.disabled(data-action="global/undo" title="undo") ↩
@@ -44,6 +45,7 @@ html
 
             .toolbar-group.icon-bar(data-path="global")
                 .icon#open-about(data-action="global/menu" title="information & settings") 🔨
+                .icon(data-action="project/save" title="save in browser") 💾
                 .icon(data-action="project/export/html" title="export html") 📦
 
             .toolbar-group.icon-bar(data-path="selection" hidden)

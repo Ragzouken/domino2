@@ -191,7 +191,7 @@ body {
     background: var(--group-color);
 }
 
-#groups > svg {
+#svgs > svg {
     position: absolute;
     z-index: -2;
     pointer-events: none;

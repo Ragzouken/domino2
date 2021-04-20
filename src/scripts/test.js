@@ -33,6 +33,8 @@ async function test() {
     });
 
     setActionHandler("global/home", centerOrigin);
+    
+    setActionHandler("project/save", () => saveProject(boardView.projectData, "save"))
 
     setActionHandler("selection/edit", editSelected);
     setActionHandler("selection/group", groupSelection);
@@ -303,7 +305,7 @@ class DominoLinkView {
         this.root = svg("svg", { class: "link" });
         this.selected = false;
 
-        const background = document.getElementById("groups");
+        const background = document.getElementById("svgs");
         background.appendChild(this.root);
     }
 
@@ -352,7 +354,7 @@ class DominoGroupView {
         this.root = svg("svg", { class: "group" });
         this.selected = false;
 
-        const background = document.getElementById("groups");
+        const background = document.getElementById("svgs");
         background.appendChild(this.root);
         svgToGroup.set(this.root, this.group);
         this.root.addEventListener("pointerdown", (event) => {

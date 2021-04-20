@@ -15,7 +15,7 @@ async function start() {
     const dataElement = ONE("#project-data");
     const player = ONE("body").getAttribute("data-player") === "true";
 
-    const save = await loadProject("TEST");
+    const save = await loadProject("save");
     const data = (player || !save) ? JSON.parse(dataElement.innerHTML) : save;
 
     await test();
@@ -38,5 +38,6 @@ async function loadDataDeferred() {
 
     const css = html("style");
     css.textContent = document.getElementById("font").textContent;
+    css.setAttribute("data-editor-only", undefined);
     document.head.appendChild(css);
 }
