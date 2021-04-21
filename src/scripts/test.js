@@ -34,7 +34,8 @@ async function test() {
 
     setActionHandler("global/home", centerOrigin);
     
-    setActionHandler("project/save", () => saveProject(boardView.projectData, "save"))
+    setActionHandler("project/save", () => saveProject(boardView.projectData, "save"));
+    setActionHandler("project/reset", () => boardView.loadProject(JSON.parse(ONE("#project-data").innerHTML)));
 
     setActionHandler("selection/edit", editSelected);
     setActionHandler("selection/group", groupSelection);
@@ -46,7 +47,7 @@ async function test() {
     });
 
     setActionHandler("group/recolor", recolorGroup);
-    setActionHandler("group/delete", deleteGroup);
+    setActionHandler("group/delete", deleteSelectedGroup);
     setActionHandler("group/select", selectGroupCards);
 
     setActionHandler("card-editor/close", closeEditor);
@@ -68,8 +69,8 @@ function updateToolbar() {
     elementByPath("selection", "div").hidden = !selection;
     elementByPath("group", "div").hidden = !selectedGroup;
 
-    elementByPath("selection/link", "div").hidden = true;//selected.size > 1;
-    //elementByPath("selection/group", "div").hidden = selected.size === 1;
+    elementByPath("selection/link", "div").hidden = selected.size > 1;
+    elementByPath("selection/group", "div").hidden = selected.size === 1;
 
     // selections
     const active = selectedGroups.length > 0 ? new Set(getGroupCards(selectedGroups[0])) : selected;
@@ -87,10 +88,19 @@ function insertCard(scene, card) {
     boardView.cardToView.set(card, view);
 }
 
+/** @param {DominoDataCard} card */
 function deleteCard(card) {
     arrayDiscard(boardView.projectData.cards, card);
 
-    boardView.projectData.groups.forEach((group) => arrayDiscard(group.cards, card));
+    boardView.projectData.groups.forEach((group) => {
+        arrayDiscard(group.cards, card.id);
+        if (group.cards.length === 0) deleteGroup(group);
+    });
+    boardView.projectData.links.forEach((link) => {
+        if (link.cardA === card.id || link.cardB === card.id) {
+            deleteLink(link);
+        }
+    });
     refreshSVGs();
 
     deselectCard(card);
@@ -122,11 +132,21 @@ function selectGroupCards() {
     getGroupCards(group).forEach(selectCard);
 }
 
-function deleteGroup() {
-    const group = selectedGroups.shift();
+function deleteSelectedGroup() {
+    deleteGroup(selectedGroups.shift());
+    deselectGroup();
+}
+
+function deleteGroup(group) {
     arrayDiscard(boardView.projectData.groups, group);
     boardView.groupToView.get(group).dispose();
-    deselectGroup();
+    boardView.groupToView.delete(group);
+}
+
+function deleteLink(link) {
+    arrayDiscard(boardView.projectData.links, link);
+    boardView.linkToView.get(link).dispose();
+    boardView.linkToView.delete(link);
 }
 
 function recolorGroup() {
@@ -334,7 +354,9 @@ class DominoLinkView {
         this.root.appendChild(main);
 
         {
-            const { x, y, width, height } = this.root.getBBox();
+            const rect = this.root.getBBox();
+            padRect(rect, 8);
+            const { x, y, width, height } = rect;
             this.root.setAttributeNS(null, "width", width.toString());
             this.root.setAttributeNS(null, "height", height.toString());
             this.root.setAttributeNS(null, "viewBox", `${x} ${y} ${width} ${height}`);
@@ -419,7 +441,7 @@ class DominoCardView {
             icon.addEventListener("click", (event) => this.onIconClicked(event, index));
         });
         
-        this.scene.container.appendChild(this.rootElement);
+        ONE("#cards").appendChild(this.rootElement);
 
         listen(resize.children[0], "pointerdown", (event) => {
             killEvent(event);
@@ -449,6 +471,10 @@ class DominoCardView {
             selectCard(this.card);
             editSelected();
         });
+    }
+
+    dispose() {
+        this.rootElement.remove();
     }
 
     /**

@@ -201,3 +201,7 @@ body {
 svg > * {
     pointer-events: initial;
 }
+
+svg.link {
+    stroke-width: 16px;
+}

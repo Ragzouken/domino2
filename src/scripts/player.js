@@ -10,6 +10,7 @@ class DominoBoardView {
 
     /** @param {DominoDataProject} projectData */
     loadProject(projectData) {
+        this.clear();
         this.projectData = projectData;
 
         this.projectData.cards.forEach((card) => {
@@ -17,6 +18,16 @@ class DominoBoardView {
             view.setCard(card);
             this.cardToView.set(card, view);
         });
+    }
+
+    clear() {
+        this.projectData = undefined;
+        this.cardToView.forEach((view) => view.dispose());
+        this.groupToView.forEach((view) => view.dispose());
+        this.linkToView.forEach((view) => view.dispose());
+        this.cardToView.clear();
+        this.groupToView.clear();
+        this.linkToView.clear();
     }
 }
 

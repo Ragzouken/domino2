@@ -93,7 +93,7 @@ function initui() {
 
     ALL("[data-tab-default]").forEach((element) => element.click());
     
-    const clicks = ['pointerdown', 'pointerup', 'click', 'wheel', 'dblclick'];
+    const clicks = ['pointerdown', 'click', 'wheel', 'dblclick'];
     ALL("[data-block-clicks]").forEach((element) => {
         for (let name of clicks) {
             element.addEventListener(name, (event) => event.stopPropagation());
