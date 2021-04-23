@@ -328,6 +328,14 @@ function centerSelection() {
     scene.frameRect(rect, .25, 1);
 }
 
+function centerCards(cards) {
+    scene.locked = true;
+    animateElementTransform(scene.container, .2).then(() => scene.locked = false);
+    const rect = boundCards(cards);
+    padRect(rect, 64);
+    scene.frameRect(rect, .25, 1);
+}
+
 function groupSelection() {
     const cards = Array.from(selectedCards).map((card) => card.id);
     const color = `rgb(${randomInt(0, 255)} ${randomInt(0, 255)} ${randomInt(0, 255)})`;
@@ -408,6 +416,22 @@ function gridSize(cells, cellWidth, cellGap) {
 
 function getCardFromId(cardId) {
     return boardView.projectData.cards.find((card) => card.id === cardId);
+}
+
+function runCardAction(action) {
+    if (action.startsWith('#')) {
+        const id = action.slice(1);
+        const card = boardView.projectData.cards.find((card) => card.id === id);
+        
+        if (card) {
+            window.location.replace('#' + id);
+            centerCards([card]);
+        }
+    } else if (action.startsWith('open:')) {
+        window.open(action.slice(5));
+    } else if (action.length > 0) {
+        window.open(action);
+    }
 }
 
 class DominoLinkView {
@@ -545,6 +569,8 @@ class DominoCardView {
 
         this.iconElements.forEach((icon, index) => {
             icon.addEventListener("click", (event) => this.onIconClicked(event, index));
+            icon.addEventListener('pointerdown', e => e.stopPropagation());
+            icon.addEventListener('dblclick', e => e.stopPropagation());
         });
         
         ONE("#cards").appendChild(this.rootElement);
@@ -642,7 +668,8 @@ class DominoCardView {
      * @param {number} index
      */
     onIconClicked(event, index) {
-
+        killEvent(event);
+        runCardAction(this.card.icons[index].action);
     }
 
     /** @param {PointerEvent} event */

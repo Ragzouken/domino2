@@ -18,6 +18,8 @@ class DominoBoardView {
             view.setCard(card);
             this.cardToView.set(card, view);
         });
+
+        refreshSVGs();
     }
 
     clear() {
