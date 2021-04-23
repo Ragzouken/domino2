@@ -57,6 +57,11 @@ async function test() {
     setActionHandler("link/select", selectLinkCards);
 
     setActionHandler("card-editor/close", closeEditor);
+
+    setActionHandler("picker/cancel", () => {
+        linking = undefined;
+        updateToolbar();
+    });
     
     // image pasting
     window.addEventListener("paste", (event) => cardEditor.paste(event));
@@ -75,14 +80,16 @@ function getCardsByIds(ids) {
 }
 
 function updateToolbar() {
+
     const selection = selectedCards.size > 0;
     const selectedGroup = selectedGroups.length > 0;
     const selectedLink = selectedLinks.length > 0;
 
-    elementByPath("global", "div").hidden = selection || selectedGroup || selectedLink;
-    elementByPath("selection", "div").hidden = !selection;
-    elementByPath("group", "div").hidden = !selectedGroup;
-    elementByPath("link", "div").hidden = !selectedLink;
+    elementByPath("global", "div").hidden = selection || selectedGroup || selectedLink || !!linking;
+    elementByPath("selection", "div").hidden = !selection || !!linking;
+    elementByPath("group", "div").hidden = !selectedGroup || !!linking;
+    elementByPath("link", "div").hidden = !selectedLink || !!linking;
+    elementByPath("picker", "div").hidden = !linking;
 
     elementByPath("selection/link", "div").hidden = selectedCards.size > 1;
     elementByPath("selection/group", "div").hidden = selectedCards.size === 1;

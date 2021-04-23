@@ -68,6 +68,11 @@ html
                 .icon(data-action="link/select" title="select cards") 🎴
                 .icon(data-action="link/recolor" title="reroll color") 🎨
                 .icon(data-action="link/delete" title="delete link") 💥
+
+            .toolbar-group.icon-bar(data-path="picker" hidden)
+                span click a card to link to
+                .icon(data-action="picker/cancel" title="cancel picking") ❌
+
         .editor-blocker(data-action="card-editor/close" data-path="card-editor" data-blocks-clicks hidden)
             .editor-panel(data-block-clicks)
                 .tab-bar
