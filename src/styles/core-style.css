@@ -1,6 +1,7 @@
 :root {
     --selection-color: rgb(106, 90, 205);
     --group-color: rgba(205, 90, 119, 0.5);
+    --link-color: rgba(113, 205, 90, 0.5);
 }
 
 html, body {
@@ -179,18 +180,6 @@ body {
     cursor: pointer;
 }
 
-.toolbar-group[data-path="global"] {
-    background: rgb(255 255 255 / 50%);
-}
-
-.toolbar-group[data-path="selection"] {
-    background: var(--selection-color);
-}
-
-.toolbar-group[data-path="group"] {
-    background: var(--group-color);
-}
-
 #svgs > svg {
     position: absolute;
     z-index: -2;
@@ -205,3 +194,8 @@ svg > * {
 svg.link {
     stroke-width: 16px;
 }
+
+svg.link line.selection-flash {
+    stroke-width: 24px;
+}
+

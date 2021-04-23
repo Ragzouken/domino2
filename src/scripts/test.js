@@ -1,7 +1,9 @@
 /** @type {Set<DominoDataCard>} */
-const selected = new Set();
+const selectedCards = new Set();
 /** @type {DominoDataGroup[]} */
-let selectedGroups = [];
+const selectedGroups = [];
+/** @type {DominoDataLink[]} */
+const selectedLinks = [];
 /** @type {DominoDataCard} */
 let linking;
 /** @type {CardEditor} */
@@ -43,12 +45,16 @@ async function test() {
     setActionHandler("selection/cancel", deselectCards);
     setActionHandler("selection/center", centerSelection);
     setActionHandler("selection/delete", () => {
-        Array.from(selected).forEach((card) => deleteCard(card));
+        Array.from(selectedCards).forEach((card) => deleteCard(card));
     });
 
     setActionHandler("group/recolor", recolorGroup);
     setActionHandler("group/delete", deleteSelectedGroup);
     setActionHandler("group/select", selectGroupCards);
+
+    setActionHandler("link/recolor", recolorLink);
+    setActionHandler("link/delete", deleteSelectedLink);
+    setActionHandler("link/select", selectLinkCards);
 
     setActionHandler("card-editor/close", closeEditor);
     
@@ -62,18 +68,27 @@ function getGroupCards(group) {
     return boardView.projectData.cards.filter((card) => cards.has(card.id));
 }
 
+/** @param {string[]} ids */
+function getCardsByIds(ids) {
+    const cards = new Set(ids);
+    return boardView.projectData.cards.filter((card) => cards.has(card.id));
+}
+
 function updateToolbar() {
-    const selection = selected.size > 0;
+    const selection = selectedCards.size > 0;
     const selectedGroup = selectedGroups.length > 0;
-    elementByPath("global", "div").hidden = selection || selectedGroup;
+    const selectedLink = selectedLinks.length > 0;
+
+    elementByPath("global", "div").hidden = selection || selectedGroup || selectedLink;
     elementByPath("selection", "div").hidden = !selection;
     elementByPath("group", "div").hidden = !selectedGroup;
+    elementByPath("link", "div").hidden = !selectedLink;
 
-    elementByPath("selection/link", "div").hidden = selected.size > 1;
-    elementByPath("selection/group", "div").hidden = selected.size === 1;
+    elementByPath("selection/link", "div").hidden = selectedCards.size > 1;
+    elementByPath("selection/group", "div").hidden = selectedCards.size === 1;
 
     // selections
-    const active = selectedGroups.length > 0 ? new Set(getGroupCards(selectedGroups[0])) : selected;
+    const active = selectedGroups.length > 0 ? new Set(getGroupCards(selectedGroups[0])) : selectedCards;
     boardView.cardToView.forEach((view, card) => view.setSelected(active.has(card)));
 }
 
@@ -115,8 +130,8 @@ function deselectAll() {
 }
 
 function deselectCards() {
-    selected.forEach((card) => boardView.cardToView.get(card).setSelected(false));
-    selected.clear();
+    selectedCards.forEach((card) => boardView.cardToView.get(card).setSelected(false));
+    selectedCards.clear();
 
     updateToolbar();
 }
@@ -128,8 +143,7 @@ function deselectGroup() {
 }
 
 function selectGroupCards() {
-    const group = selectedGroups[0];
-    getGroupCards(group).forEach(selectCard);
+    getCardsByIds(selectedGroups[0].cards).forEach(selectCard);
 }
 
 function deleteSelectedGroup() {
@@ -143,16 +157,38 @@ function deleteGroup(group) {
     boardView.groupToView.delete(group);
 }
 
+function recolorGroup() {
+    const group = selectedGroups[0];
+    group.color = `rgb(${randomInt(0, 255)} ${randomInt(0, 255)} ${randomInt(0, 255)})`;
+    boardView.groupToView.get(group).regenerateSVG();
+}
+
+function deselectLink() {
+    selectedLinks.forEach((link) => boardView.linkToView.get(link).setHighlight(false));
+    selectedLinks.length = 0;
+    updateToolbar();
+}
+
+function selectLinkCards() {
+    const cards = [selectedLinks[0].cardA, selectedLinks[0].cardB];
+    getCardsByIds(cards).forEach(selectCard);
+}
+
+function deleteSelectedLink() {
+    deleteLink(selectedLinks.shift());
+    deselectLink();
+}
+
 function deleteLink(link) {
     arrayDiscard(boardView.projectData.links, link);
     boardView.linkToView.get(link).dispose();
     boardView.linkToView.delete(link);
 }
 
-function recolorGroup() {
-    const group = selectedGroups[0];
-    group.color = `rgb(${randomInt(0, 255)} ${randomInt(0, 255)} ${randomInt(0, 255)})`;
-    boardView.groupToView.get(group).regenerateSVG();
+function recolorLink() {
+    const link = selectedLinks[0];
+    link.color = `rgb(${randomInt(0, 255)} ${randomInt(0, 255)} ${randomInt(0, 255)})`;
+    boardView.linkToView.get(link).regenerateSVG();
 }
 
 function closeEditor() {
@@ -160,40 +196,42 @@ function closeEditor() {
 }
 
 function editSelected() {
-    if (selected.size !== 1) return;
-    const card = Array.from(selected)[0];
+    if (selectedCards.size !== 1) return;
+    const card = Array.from(selectedCards)[0];
 
     centerSelection();
     cardEditor.open(card);
 }
 
 function selectCard(card) {
-    selected.add(card);
+    selectedCards.add(card);
     boardView.cardToView.get(card).setSelected(true);
 
     deselectGroup();
+    deselectLink();
     updateToolbar();
 }
 
 function deselectCard(card) {
-    selected.delete(card);
+    selectedCards.delete(card);
     boardView.cardToView.get(card).setSelected(false);
 
     updateToolbar();
 }
 
 function beginLink() {
-    if (selected.size !== 1) return;
-    linking = Array.from(selected)[0];
+    if (selectedCards.size !== 1) return;
+    linking = Array.from(selectedCards)[0];
     updateToolbar();
 }
 
 function selectCardToggle(card) {
     if (linking) {
-        const link = { id: nanoid(), cardA: linking.id, cardB: card.id };
+        const link = { cardA: linking.id, cardB: card.id, color: 'black' };
         boardView.projectData.links.push(link);
         linking = undefined;
         refreshSVGs();
+        selectLinks([link]);
         console.log("LINK");
     } else if (selectedGroups.length > 0) {
         const group = selectedGroups[0];
@@ -202,9 +240,15 @@ function selectCardToggle(card) {
         refreshSVGs();
         updateToolbar();
     } else {
-        if (selected.has(card)) deselectCard(card);
+        if (selectedCards.has(card)) deselectCard(card);
         else selectCard(card);
     }
+}
+
+function deselectAll() {
+    deselectCards();
+    deselectGroup();
+    deselectLink();
 }
 
 function cycleGroup() {
@@ -225,13 +269,39 @@ function selectGroups(groups) {
     } else {
         const prev = selectedGroups[0];
 
-        deselectCards();
-        deselectGroup();
+        deselectAll();
         selectedGroups.push(...groups);
         boardView.groupToView.get(selectedGroups[0]).setHighlight(true);
         updateToolbar();
         
         if (prev === selectedGroups[0]) cycleGroup();
+    }
+}
+
+function cycleLink() {
+    const current = selectedLinks.shift();
+    selectedLinks.push(current);
+    boardView.linkToView.get(current).setHighlight(false);
+    boardView.linkToView.get(selectedLinks[0]).setHighlight(true);
+    updateToolbar();
+}
+
+/** @param {DominoDataLink[]} links */
+function selectLinks(links) {
+    const combined = new Set([...links, ...selectedLinks]);
+    const same = combined.size === selectedLinks.length && combined.size === links.length;
+
+    if (same) {
+        cycleLink();
+    } else {
+        const prev = selectedLinks[0];
+
+        deselectAll();
+        selectedLinks.push(...links);
+        boardView.linkToView.get(selectedLinks[0]).setHighlight(true);
+        updateToolbar();
+        
+        if (prev === selectedLinks[0]) cycleLink();
     }
 }
 
@@ -246,13 +316,13 @@ function centerOrigin() {
 function centerSelection() {
     scene.locked = true;
     animateElementTransform(scene.container, .2).then(() => scene.locked = false);
-    const rect = boundCards(Array.from(selected));
+    const rect = boundCards(Array.from(selectedCards));
     padRect(rect, 64);
     scene.frameRect(rect, .25, 1);
 }
 
 function groupSelection() {
-    const cards = Array.from(selected).map((card) => card.id);
+    const cards = Array.from(selectedCards).map((card) => card.id);
     const color = `rgb(${randomInt(0, 255)} ${randomInt(0, 255)} ${randomInt(0, 255)})`;
     const group = { cards, color };
     boardView.projectData.groups.push(group);
@@ -262,6 +332,8 @@ function groupSelection() {
 
 /** @type {Map<SVGElement, DominoDataGroup>} */
 const svgToGroup = new Map();
+/** @type {Map<SVGElement, DominoDataLink>} */
+const svgToLink = new Map();
 
 function dragGroups(event) {
     const overlapping = document.elementsFromPoint(event.clientX, event.clientY);
@@ -269,11 +341,24 @@ function dragGroups(event) {
     const groups = new Set(svgs.map((svg) => svgToGroup.get(svg)));
 
     boardView.projectData.groups.forEach((group) => {
-        getGroupCards(group).forEach((card) => {
+        getCardsByIds(group.cards).forEach((card) => {
             boardView.cardToView.get(card).startDrag(event);
         });
     });
     selectGroups(Array.from(groups));
+}
+
+function dragLinks(event) {
+    const overlapping = document.elementsFromPoint(event.clientX, event.clientY);
+    const svgs = overlapping.map((overlap) => overlap.closest("svg")).filter((svg) => svg !== null);
+    const links = new Set(svgs.map((svg) => svgToLink.get(svg)));
+
+    boardView.projectData.links.forEach((link) => {
+        getCardsByIds([link.cardA, link.cardB]).forEach((card) => {
+            boardView.cardToView.get(card).startDrag(event);
+        });
+    });
+    selectLinks(Array.from(links));
 }
 
 function refreshSVGs() {
@@ -327,10 +412,24 @@ class DominoLinkView {
 
         const background = document.getElementById("svgs");
         background.appendChild(this.root);
+
+        svgToLink.set(this.root, this.link);
+        this.root.addEventListener("pointerdown", (event) => {
+            killEvent(event);
+            dragLinks(event);
+        });
     }
 
     dispose() {
         this.root.remove();
+    }
+
+    setHighlight(value) {
+        this.selected = value;
+
+        if (this.selectElement) {
+            this.selectElement.style.display = value ? "unset" : "none";
+        }
     }
 
     regenerateSVG() {
@@ -345,12 +444,12 @@ class DominoLinkView {
         const line = { x1, y1, x2, y2 };
 
         padRect(rect, 8);
-        const main = svg("line", { ...line, stroke: "magenta" });
+        const main = svg("line", { ...line, stroke: this.link.color });
         
         //padRect(rect, 8);           
-        //this.selectElement = svg("line", {...rect, rx: 24, fill: "gray", "class": "selection-flash" });
+        this.selectElement = svg("line", {...line, "class": "selection-flash" });
         
-        //this.root.appendChild(this.selectElement);
+        this.root.appendChild(this.selectElement);
         this.root.appendChild(main);
 
         {
@@ -363,7 +462,7 @@ class DominoLinkView {
             this.root.setAttributeNS(null, "transform", translationMatrix({ x, y }).toString());
         }
 
-        //this.setHighlight(this.selected);
+        this.setHighlight(this.selected);
     }
 }
 
@@ -453,8 +552,8 @@ class DominoCardView {
 
             let drags;
 
-            if (selected.has(this.card)) {
-                drags = Array.from(selected).map((card) => boardView.cardToView.get(card).startDrag(event));
+            if (selectedCards.has(this.card)) {
+                drags = Array.from(selectedCards).map((card) => boardView.cardToView.get(card).startDrag(event));
             } else {
                 //if (!event.shiftKey) deselectCards();
                 drags = [this.startDrag(event)];

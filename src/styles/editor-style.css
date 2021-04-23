@@ -13,11 +13,13 @@
 @keyframes selection-flash {
     0% {
         fill: black;
+        stroke: black;
         border-color: black;
     }
 
     100% {
         fill: white;
+        stroke: white;
         border-color: white;
     }
 }
@@ -165,3 +167,20 @@ textarea {
 .button-row > button {
     flex: 1;
 }
+
+.toolbar-group[data-path="global"] {
+    background: rgb(255 255 255 / 50%);
+}
+
+.toolbar-group[data-path="selection"] {
+    background: var(--selection-color);
+}
+
+.toolbar-group[data-path="group"] {
+    background: var(--group-color);
+}
+
+.toolbar-group[data-path="link"] {
+    background: var(--link-color);
+}
+

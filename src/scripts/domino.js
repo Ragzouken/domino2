@@ -24,9 +24,9 @@
 
 /**
  * @typedef {Object} DominoDataLink
- * @property {string} id
  * @property {string} cardA
  * @property {string} cardB
+ * @property {string} color
  */
 
 /**
