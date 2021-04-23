@@ -39,6 +39,10 @@ async function test() {
     setActionHandler("project/save", () => saveProject(boardView.projectData, "save"));
     setActionHandler("project/reset", () => boardView.loadProject(JSON.parse(ONE("#project-data").innerHTML)));
 
+    setActionHandler("selection/copy-id", () => {
+        const id = Array.from(selectedCards)[0].id;
+        navigator.clipboard.writeText('#'+id);
+    });
     setActionHandler("selection/edit", editSelected);
     setActionHandler("selection/group", groupSelection);
     setActionHandler("selection/link", beginLink);
@@ -321,11 +325,7 @@ function centerOrigin() {
 }
 
 function centerSelection() {
-    scene.locked = true;
-    animateElementTransform(scene.container, .2).then(() => scene.locked = false);
-    const rect = boundCards(Array.from(selectedCards));
-    padRect(rect, 64);
-    scene.frameRect(rect, .25, 1);
+    centerCards(Array.from(selectedCards));
 }
 
 function centerCards(cards) {
@@ -334,6 +334,8 @@ function centerCards(cards) {
     const rect = boundCards(cards);
     padRect(rect, 64);
     scene.frameRect(rect, .25, 1);
+
+    if (cards.length === 1) window.location.replace("#" + cards[0].id);
 }
 
 function groupSelection() {
