@@ -182,7 +182,7 @@ body {
 
 #svgs > svg {
     position: absolute;
-    z-index: -2;
+    z-index: -3;
     pointer-events: none;
     mix-blend-mode: screen;
 }
@@ -191,8 +191,9 @@ svg > * {
     pointer-events: initial;
 }
 
-svg.link {
+#svgs > svg.link {
     stroke-width: 16px;
+    z-index: -2;
 }
 
 svg.link line.selection-flash {

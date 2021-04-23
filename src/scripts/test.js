@@ -355,7 +355,7 @@ const svgToLink = new Map();
 function dragGroups(event) {
     const overlapping = document.elementsFromPoint(event.clientX, event.clientY);
     const svgs = overlapping.map((overlap) => overlap.closest("svg")).filter((svg) => svg !== null);
-    const groups = new Set(svgs.map((svg) => svgToGroup.get(svg)));
+    const groups = new Set(svgs.map((svg) => svgToGroup.get(svg)).filter((group) => group !== undefined));
 
     boardView.projectData.groups.forEach((group) => {
         getCardsByIds(group.cards).forEach((card) => {
@@ -368,7 +368,7 @@ function dragGroups(event) {
 function dragLinks(event) {
     const overlapping = document.elementsFromPoint(event.clientX, event.clientY);
     const svgs = overlapping.map((overlap) => overlap.closest("svg")).filter((svg) => svg !== null);
-    const links = new Set(svgs.map((svg) => svgToLink.get(svg)));
+    const links = new Set(svgs.map((svg) => svgToLink.get(svg)).filter((link) => link !== undefined));
 
     boardView.projectData.links.forEach((link) => {
         getCardsByIds([link.cardA, link.cardB]).forEach((card) => {
@@ -487,7 +487,7 @@ class DominoLinkView {
 
         {
             const rect = this.root.getBBox();
-            padRect(rect, 8);
+            padRect(rect, 16);
             const { x, y, width, height } = rect;
             this.root.setAttributeNS(null, "width", width.toString());
             this.root.setAttributeNS(null, "height", height.toString());
