@@ -244,7 +244,6 @@ function selectCardToggle(card) {
         linking = undefined;
         refreshSVGs();
         selectLinks([link]);
-        console.log("LINK");
     } else if (selectedGroups.length > 0) {
         const group = selectedGroups[0];
         if (!arrayDiscard(group.cards, card.id)) group.cards.push(card.id);
