@@ -354,10 +354,11 @@ const svgToLink = new Map();
 
 function dragGroups(event) {
     const overlapping = document.elementsFromPoint(event.clientX, event.clientY);
+    console.log(overlapping);
     const svgs = overlapping.map((overlap) => overlap.closest("svg")).filter((svg) => svg !== null);
     const groups = new Set(svgs.map((svg) => svgToGroup.get(svg)).filter((group) => group !== undefined));
 
-    boardView.projectData.groups.forEach((group) => {
+    groups.forEach((group) => {
         getCardsByIds(group.cards).forEach((card) => {
             boardView.cardToView.get(card).startDrag(event);
         });
@@ -370,7 +371,7 @@ function dragLinks(event) {
     const svgs = overlapping.map((overlap) => overlap.closest("svg")).filter((svg) => svg !== null);
     const links = new Set(svgs.map((svg) => svgToLink.get(svg)).filter((link) => link !== undefined));
 
-    boardView.projectData.links.forEach((link) => {
+    links.forEach((link) => {
         getCardsByIds([link.cardA, link.cardB]).forEach((card) => {
             boardView.cardToView.get(card).startDrag(event);
         });
