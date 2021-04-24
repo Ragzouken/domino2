@@ -236,6 +236,7 @@ function beginLink() {
     updateToolbar();
 }
 
+/** @param {DominoDataCard} card */
 function selectCardToggle(card) {
     if (linking) {
         const link = { cardA: linking.id, cardB: card.id, color: 'black' };
@@ -246,8 +247,7 @@ function selectCardToggle(card) {
         console.log("LINK");
     } else if (selectedGroups.length > 0) {
         const group = selectedGroups[0];
-        if (group.cards.indexOf(card) >= 0) arrayDiscard(group.cards, card);
-        else group.cards.push(card);
+        if (!arrayDiscard(group.cards, card.id)) group.cards.push(card.id);
         refreshSVGs();
         updateToolbar();
     } else {
@@ -354,7 +354,6 @@ const svgToLink = new Map();
 
 function dragGroups(event) {
     const overlapping = document.elementsFromPoint(event.clientX, event.clientY);
-    console.log(overlapping);
     const svgs = overlapping.map((overlap) => overlap.closest("svg")).filter((svg) => svg !== null);
     const groups = new Set(svgs.map((svg) => svgToGroup.get(svg)).filter((group) => group !== undefined));
 
