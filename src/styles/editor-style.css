@@ -30,10 +30,19 @@
     right: -1px; bottom: -1px;
 
     opacity: 50%;
+    display: none;
 }
 
 .resize-handle > polygon {
     cursor: se-resize;
+}
+
+.selected .resize-handle {
+    display: unset;
+}
+
+.card-root:hover .resize-handle {
+    display: unset;
 }
 
 .target {
