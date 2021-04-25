@@ -56,6 +56,7 @@ class PanningScene {
             const grab = mouse.invertSelf().multiplySelf(this.transform);
             document.body.style.setProperty("cursor", "grabbing");
             this.viewport.style.setProperty("cursor", "grabbing");
+            this.container.classList.toggle("skip-transition", true);
 
             const gesture = trackGesture(event);
             gesture.on("pointermove", (event) => {
@@ -68,6 +69,7 @@ class PanningScene {
             gesture.on("pointerup", (event) => {
                 document.body.style.removeProperty("cursor");
                 this.viewport.style.removeProperty("cursor");
+                this.container.classList.toggle("skip-transition", false);
             });
             gesture.on("click", (event) => {
                 deselectAll();
@@ -82,12 +84,16 @@ class PanningScene {
             const mouse = this.mouseEventToViewportTransform(event);
             const origin = (this.transform.inverse().multiply(mouse)).transformPoint();
 
+            const deltaY = event.deltaMode === 0 ? event.deltaY : event.deltaY * 33;
+
             const [minScale, maxScale] = [.25, 2];
             const prevScale = getMatrixScale(this.transform).x;
             const [minDelta, maxDelta] = [minScale/prevScale, maxScale/prevScale];
-            const magnitude = Math.min(Math.abs(event.deltaY), 25);
-            const exponent = Math.sign(event.deltaY) * magnitude * -.01;
+            const magnitude = Math.min(Math.abs(deltaY), 25);
+            const exponent = Math.sign(deltaY) * magnitude * -.01;
             const deltaScale = clamp(Math.pow(2, exponent), minDelta, maxDelta);
+
+            console.log(deltaY, magnitude, exponent);
 
             // prev * delta <= max -> delta <= max/prev
             this.transform.scaleSelf(
