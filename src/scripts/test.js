@@ -119,7 +119,7 @@ function deleteCard(card) {
     arrayDiscard(boardView.projectData.cards, card);
 
     boardView.projectData.groups.forEach((group) => {
-        arrayDiscard(group.cards, card.id);
+        if (arrayDiscard(group.cards, card.id)) refreshGroup(group);
         if (group.cards.length === 0) deleteGroup(group);
     });
     boardView.projectData.links.forEach((link) => {
@@ -127,7 +127,6 @@ function deleteCard(card) {
             deleteLink(link);
         }
     });
-    refreshSVGs();
 
     deselectCard(card);
     boardView.cardToView.get(card).rootElement.remove();
@@ -242,12 +241,12 @@ function selectCardToggle(card) {
         const link = { cardA: linking.id, cardB: card.id, color: 'black' };
         boardView.projectData.links.push(link);
         linking = undefined;
-        refreshSVGs();
+        refreshLink(link);
         selectLinks([link]);
     } else if (selectedGroups.length > 0) {
         const group = selectedGroups[0];
         if (!arrayDiscard(group.cards, card.id)) group.cards.push(card.id);
-        refreshSVGs();
+        refreshGroup(group);
         updateToolbar();
     } else {
         if (selectedCards.has(card)) deselectCard(card);
@@ -342,7 +341,7 @@ function groupSelection() {
     const color = `rgb(${randomInt(0, 255)} ${randomInt(0, 255)} ${randomInt(0, 255)})`;
     const group = { cards, color };
     boardView.projectData.groups.push(group);
-    refreshSVGs();
+    refreshGroup(group);
     selectGroups([group]);
 }
 
@@ -377,18 +376,35 @@ function dragLinks(event) {
     selectLinks(Array.from(links));
 }
 
-function refreshSVGs() {
+function onCardMoved(card) {
     boardView.projectData.groups.forEach((group) => {
         const view = boardView.groupToView.get(group) || new DominoGroupView(group);
         boardView.groupToView.set(group, view);
-        view.regenerateSVG();
+        if (group.cards.includes(card.id)) view.regenerateSVG();
     });
 
     boardView.projectData.links.forEach((link) => {
         const view = boardView.linkToView.get(link) || new DominoLinkView(link);
         boardView.linkToView.set(link, view);
-        view.regenerateSVG();
+        if (link.cardA === card.id || link.cardB === card.id) view.regenerateSVG();
     });
+} 
+
+function refreshGroup(group) {
+    const view = boardView.groupToView.get(group) || new DominoGroupView(group);
+    boardView.groupToView.set(group, view);
+    view.regenerateSVG();
+}
+
+function refreshLink(link) {
+    const view = boardView.linkToView.get(link) || new DominoLinkView(link);
+    boardView.linkToView.set(link, view);
+    view.regenerateSVG();
+}
+
+function refreshSVGs() {
+    boardView.projectData.groups.forEach(refreshGroup);
+    boardView.projectData.links.forEach(refreshLink);
 }
 
 /** @param {DominoDataCard} card */
@@ -704,7 +720,7 @@ class DominoCardView {
             const bounds = boundCard(this.card);
             target.style.width = `${bounds.width}px`;
             target.style.height = `${bounds.height}px`;
-            refreshSVGs();
+            onCardMoved(this.card);
         });
         gesture.on("pointerup", (event) => {
             const bounds = boundCard(this.card);
@@ -714,8 +730,8 @@ class DominoCardView {
             // snap card to grid
             animateElementSize(this.rootElement, .1).then(() => target.remove());
             target.remove();
-
-            refreshSVGs();
+            
+            onCardMoved(this.card);
         });
     }
 
@@ -749,7 +765,7 @@ class DominoCardView {
 
             // TODO: this has gotta have a bigger system for updating
             // on drag and during snap animation etc
-            refreshSVGs();
+            onCardMoved(this.card);
         });
         drag.on("pointerup", (event) => {
             const mouse = this.scene.mouseEventToSceneTransform(event);
@@ -763,7 +779,7 @@ class DominoCardView {
             this.setCursor("grab");
 
             // TODO:
-            refreshSVGs();
+            onCardMoved(this.card);
         });
 
         this.setCursor("grabbing");
