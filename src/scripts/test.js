@@ -32,6 +32,9 @@ async function test() {
         }
 
         insertCard(scene, card);
+        deselectAll();
+        selectCard(card);
+        editSelected();
     });
 
     setActionHandler("global/home", centerOrigin);
@@ -906,7 +909,6 @@ async function compressImageURL(url, quality, size) {
             context.drawImage(image, ox, oy, fw, fh);
             const url = canvas.toDataURL('image/jpeg', quality);
 
-            console.log(`${url.length}B`);
             resolve(url);
         };
         image.onerror = () => resolve(undefined);

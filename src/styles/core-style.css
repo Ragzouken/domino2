@@ -32,7 +32,7 @@ body {
        https://stackoverflow.com/questions/26907265/css-will-change-how-to-use-it-how-it-works */
     /* will-change: transform; */
 
-    transition: transform .1s linear;
+    /* transition: transform .1s linear; */
 }
 
 .card-root {

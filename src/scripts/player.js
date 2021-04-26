@@ -93,8 +93,6 @@ class PanningScene {
             const exponent = Math.sign(deltaY) * magnitude * -.01;
             const deltaScale = clamp(Math.pow(2, exponent), minDelta, maxDelta);
 
-            console.log(deltaY, magnitude, exponent);
-
             // prev * delta <= max -> delta <= max/prev
             this.transform.scaleSelf(
                 deltaScale, deltaScale, deltaScale,
