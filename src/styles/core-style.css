@@ -213,3 +213,47 @@ svg.link line.selection-flash {
     color: white;
     text-shadow: 1px 1px 1px black, -1px 1px 1px black, -1px -1px 1px black, 1px -1px 1px black;
 }
+
+#left-sidebar {
+    position: absolute;
+    left: 0; top: 0; bottom: 0;
+    min-width: 25%;
+    max-width: 50%;
+
+    background: white;
+
+    display: flex;
+    flex-direction: column;
+}
+
+.editor-page > h2 {
+    margin: 0;
+}
+
+.button-row > select, .button-row > input {
+    flex: 1;
+}
+
+.button-row button[data-action="global-editor/card-style/new"] {
+    flex: 0;
+    white-space: nowrap;
+}
+
+.settings-grid > span {
+    grid-column-start: 1;
+    grid-column-end: 2;
+}
+
+.settings-grid > input, .settings-grid > select {
+    grid-column-start: 2;
+    grid-column-end: 5;
+}
+
+.settings-grid {
+    display: grid;
+    
+    grid-template-columns: repeat(4, 1fr);
+
+    column-gap: 1em;
+    row-gap: 1em;
+}

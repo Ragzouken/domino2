@@ -1,4 +1,19 @@
 /**
+ * @typedef {Object} DominoDataCardStyle
+ * @property {string} id
+ * @property {string} name
+ * @property {Partial<{
+ *   "custom-css": string,
+ *   "text-font": string,
+ *   "text-color": string,
+ *   "text-size": number,
+ *   "text-center": boolean,
+ *   "card-color": string,
+ *   "icon-hide-empty": boolean,
+ * }>} properties
+ */
+
+/**
  * @typedef {Object} DominoDataCardIcon
  * @property {string} icon
  * @property {string} action
@@ -14,6 +29,7 @@
  * @property {string?} image
  * @property {string?} alttext
  * @property {string?} style
+ * @property {string?} cardStyle
  */
 
 /** 
@@ -42,6 +58,7 @@
  * @property {DominoDataCard[]} cards
  * @property {DominoDataGroup[]} groups
  * @property {DominoDataLink[]} links
+ * @property {DominoDataCardStyle[]} cardStyles
  */
 
 /** @type {DominoDataProject} */
@@ -53,5 +70,6 @@ const EMPTY_PROJECT_DATA = {
     },
     cards: [],
     groups: [],
-    links: []
+    links: [],
+    cardStyles: [],
 }

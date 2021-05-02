@@ -201,3 +201,14 @@ textarea {
     font-size: .75em;
     white-space: nowrap;
 }
+
+.button-list {
+    display: flex;
+    flex-flow: row wrap;
+    align-items: flex-start;
+    align-content: flex-start;
+}
+
+[data-path="card-editor/styles"] {
+    flex: 1;
+}

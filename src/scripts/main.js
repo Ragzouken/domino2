@@ -20,7 +20,6 @@ async function start() {
 
     await test();
     boardView.loadProject(data);
-    refreshSVGs();
 
     if (player) {
         // data

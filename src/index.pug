@@ -12,6 +12,7 @@ html
             include styles/core-style.css
         style#editor-style
             include styles/editor-style.css
+        style#card-styles
         // third party libraries
         // scripts
         script(id="database.js")
@@ -74,7 +75,7 @@ html
                 span click a card to link to
                 .icon(data-action="picker/cancel" title="cancel picking") ❌
 
-        .editor-blocker(data-action="card-editor/close" data-path="card-editor" data-blocks-clicks hidden)
+        .editor-blocker(data-action="card-editor/close" data-path="card-editor" data-block-clicks hidden)
             .editor-panel(data-block-clicks)
                 .tab-bar
                     div(data-tab-toggle="card-editor/text" data-tab-default) TEXT
@@ -93,13 +94,41 @@ html
                         input(data-path=`card-editor/icons/${row}/icon` type="text").icon-select
                         input(data-path=`card-editor/icons/${row}/action` type="text").icon-action
                 .editor-page(data-tab-body="card-editor/style")
-                    textarea(data-path="card-editor/style")
+                    select(data-path="card-editor/styles" size="3")
+                    textarea(data-path="card-editor/style" hidden)
                 .editor-page(data-tab-body="card-editor/image")
                     .button-row
                         button(data-action="card-editor/image/upload") upload image
                         button(data-action="card-editor/image/remove") remove image
                         input(data-path="card-editor/image" type="file" accept="image/*" hidden)
                     textarea(data-path="card-editor/image/alt" placeholder="alt text" spellcheck="true")
+        .editor-blocker(data-action="global-editor/close" data-path="global-editor" data-block-clicks hidden)
+            #left-sidebar(data-block-clicks)
+                .tab-bar
+                    div(data-tab-toggle="global-editor/card-styles" data-tab-default) CARD STYLES
+                .editor-page(data-tab-body="global-editor/card-styles")
+                    .button-row
+                        select(data-path="global-editor/card-styles/selected")
+                            option default card
+                        button(data-action="global-editor/card-style/new") new style
+                    h2 text
+                    .settings-grid
+                        span font
+                        select
+                            option default font
+                        span size
+                        input(type="range")
+                        span color
+                        input(type="color")
+                        span alignment
+                        select
+                            option left
+                    h2 card
+                    .settings-grid
+                        span color
+                        input(type="color")
+                    h2 custom css
+                    textarea(data-path="global-editor/card-styles/selected/custom")
         script#project-data(type="text/json")
             include project-data.json
         script loadData();

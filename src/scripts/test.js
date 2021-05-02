@@ -410,6 +410,59 @@ function refreshSVGs() {
     boardView.projectData.links.forEach(refreshLink);
 }
 
+/** @param {DominoDataCardStyle} style */
+function cardStyleToCss(style) {
+    const bodyLines = [];
+    const iconLines = [];
+
+    /** @param {keyof DominoDataCardStyle["properties"]} name */
+    function check(rules, name, transform) {
+        const value = style.properties[name];
+        const rule = value ? transform(value) : undefined;
+        if (rule) rules.push(rule);
+    }
+
+    check(bodyLines, "card-color", (color) => `background-color: ${color}`);
+    check(bodyLines, "text-font", (font) => `font-family: ${font}`);
+    check(bodyLines, "text-size", (size) => `font-size: ${size}`);
+    check(bodyLines, "text-color", (color) => `color: ${color}`);
+    check(bodyLines, "text-center", (active) => active ? `text-align: center` : undefined);
+
+    const rules = [
+        `.${style.id} .card-body { ${bodyLines.join("; ")} }`,
+        `.${style.id} .card-icon-bar { ${iconLines.join("; ")} }`,
+    ];
+
+    if (style.properties["icon-hide-empty"]) {
+        rules.push(`.${style.id} .blank { display: none; }`);
+    }
+
+    // custom css prefix
+    if (style.properties["custom-css"]) {
+        const doc = document.implementation.createHTMLDocument("");
+        const styleElement = document.createElement("style");
+        styleElement.textContent = style.properties["custom-css"];
+        doc.body.appendChild(styleElement);
+
+        Array.from(styleElement.sheet.cssRules).forEach((rule) => {
+            if (rule instanceof CSSStyleRule) {
+                const selectors = rule.selectorText.split(",");
+                const prefixed = selectors.map((selector) => `.${style.id} ${selector}`).join(",");
+                rule.selectorText = prefixed;
+                rules.push(rule.cssText);
+            }
+        });
+    }
+
+    return rules.join("\n");
+}
+
+function refreshCardStyles() {
+    const element = document.getElementById("card-styles");
+    const styles = boardView.projectData.cardStyles.map(cardStyleToCss);
+    element.innerHTML = styles.join("\n");
+}
+
 /** @param {DominoDataCard} card */
 function boundCard(card) {
     return new DOMRect(
@@ -661,6 +714,8 @@ class DominoCardView {
         const bounds = boundCard(this.card);
         this.rootElement.style.width = `${bounds.width}px`;
         this.rootElement.style.height = `${bounds.height}px`;
+        this.rootElement.setAttribute("class", "card-root " + this.card.cardStyle ?? "");
+        this.setSelected(selectedCards.has(this.card));
 
         this.card.icons.forEach((data, i) => {
             const element = this.iconElements[i];

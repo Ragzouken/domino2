@@ -1,3 +1,8 @@
+/** @param {DominoDataProject} projectData */
+function repairProjectData(projectData) {
+    projectData.cardStyles ||= [];
+}
+
 class DominoBoardView {
     constructor() {
         /** @type {Map<DominoDataCard, DominoCardView>} */
@@ -10,6 +15,8 @@ class DominoBoardView {
 
     /** @param {DominoDataProject} projectData */
     loadProject(projectData) {
+        repairProjectData(projectData);
+
         this.clear();
         this.projectData = projectData;
 
@@ -20,6 +27,7 @@ class DominoBoardView {
         });
 
         refreshSVGs();
+        refreshCardStyles();
     }
 
     clear() {
