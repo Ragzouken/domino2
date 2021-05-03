@@ -2423,7 +2423,7 @@
         "id": "STYLE-GRID",
         "name": "grid",
         "properties": {
-          "custom-css": ".card-body { line-height: 1.35em; background-image: linear-gradient(gainsboro 1px, transparent 1px), linear-gradient(90deg, gainsboro 1px, transparent 1px); background-size: 1.3em 1.3em; background-position: center; }"
+          "custom-css": ".card-body { line-height: 1.35em; background-image: linear-gradient(gainsboro 1px, transparent 1px), linear-gradient(90deg, gainsboro 1px, transparent 1px); background-size: 1.3em 1.3em; background-position: .75em .75em; }"
         }
       },
       {

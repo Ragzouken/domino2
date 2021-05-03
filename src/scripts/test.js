@@ -410,12 +410,11 @@ function refreshSVGs() {
     boardView.projectData.links.forEach(refreshLink);
 }
 
+const cardStyleVariables = ["card-color", "text-font", "text-size", "text-color"];
 /** @param {DominoDataCardStyle} style */
 function cardStyleToCss(style) {
     const declarations = [];
-
-    const variables = ["card-color", "text-font", "text-size", "text-color"];
-    variables.forEach((name) => {
+    cardStyleVariables.forEach((name) => {
         const value = style.properties[name];
         if (value) declarations.push(`--${name}: ${value};`);
     })
