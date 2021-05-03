@@ -2394,7 +2394,8 @@
         "properties": {
           "text-size": "30px",
           "text-center": true,
-          "custom-css": ".card-body { align-items: center; font-weight: bold; }"
+          "card-color": "rgb(255, 255, 255, 25%)",
+          "custom-css": ".card-body { align-items: center; font-weight: bold; } .card-root { --card-edge-color: rgba(0, 0, 0, 25%); }"
         }
       },
       {

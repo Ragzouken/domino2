@@ -412,25 +412,18 @@ function refreshSVGs() {
 
 /** @param {DominoDataCardStyle} style */
 function cardStyleToCss(style) {
-    const bodyLines = [];
-    const iconLines = [];
+    const declarations = [];
 
-    /** @param {keyof DominoDataCardStyle["properties"]} name */
-    function check(rules, name, transform) {
+    const variables = ["card-color", "text-font", "text-size", "text-color"];
+    variables.forEach((name) => {
         const value = style.properties[name];
-        const rule = value ? transform(value) : undefined;
-        if (rule) rules.push(rule);
-    }
+        if (value) declarations.push(`--${name}: ${value};`);
+    })
 
-    check(bodyLines, "card-color", (color) => `background-color: ${color}`);
-    check(bodyLines, "text-font", (font) => `font-family: ${font}`);
-    check(bodyLines, "text-size", (size) => `font-size: ${size}`);
-    check(bodyLines, "text-color", (color) => `color: ${color}`);
-    check(bodyLines, "text-center", (active) => active ? `text-align: center` : undefined);
+    if (style.properties["text-center"]) declarations.push("--text-align: center;");
 
     const rules = [
-        `.${style.id} .card-body { ${bodyLines.join("; ")} }`,
-        `.${style.id} .card-icon-bar { ${iconLines.join("; ")} }`,
+        `.${style.id} { ${declarations.join(" ")} }`,
     ];
 
     if (style.properties["icon-hide-empty"]) {
@@ -447,13 +440,20 @@ function cardStyleToCss(style) {
         Array.from(styleElement.sheet.cssRules).forEach((rule) => {
             if (rule instanceof CSSStyleRule) {
                 const selectors = rule.selectorText.split(",");
-                const prefixed = selectors.map((selector) => `.${style.id} ${selector}`).join(",");
+                const prefixed = selectors.map((selector) => {
+                    if (selector.startsWith(".card-root")) {
+                        return `.${style.id}${selector}`;
+                    } else {
+                        return `.${style.id} ${selector}`;
+                    }
+                }).join(",");
                 rule.selectorText = prefixed;
                 rules.push(rule.cssText);
             }
         });
     }
 
+    console.log(rules);
     return rules.join("\n");
 }
 
@@ -791,6 +791,7 @@ class DominoCardView {
             
             onCardMoved(this.card);
         });
+        gesture.emit("pointermove", event);
     }
 
     /** @param {PointerEvent} event */

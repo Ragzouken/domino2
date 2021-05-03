@@ -2,6 +2,8 @@
     --selection-color: rgb(106, 90, 205);
     --group-color: rgba(205, 90, 119, 0.5);
     --link-color: rgba(113, 205, 90, 0.5);
+
+    --black-text-outline: 1px 1px 1px black, -1px 1px 1px black, -1px -1px 1px black, 1px -1px 1px black;
 }
 
 html, body {
@@ -35,37 +37,6 @@ body {
     /* transition: transform .1s linear; */
 }
 
-.card-root {
-    position: absolute;
-    width: 240px; height: 144px;
-
-    border-radius: 8px;
-    box-shadow: 0 3px 0 black;
-}
-
-.card-body {
-    width: 100%; height: 100%;
-    position: relative; overflow: hidden; /* clipping */
-    background-color: white;
-    color: black;
-
-    /* tiny curve on corners */
-    border-radius: 8px;
-
-    font-family: "Lora", sans-serif;
-    display: flex;
-    margin: 0; 
-    word-wrap: break-word;
-
-    background-size: cover;
-    background-position: center;
-}
-
-.card-text {
-    width: 100%;
-    padding: 16px;
-}
-
 .icon-bar {
     display: flex;
     flex-direction: row;
@@ -88,49 +59,8 @@ body {
     text-decoration: none;
 }
 
-.card-icon-bar {
-    position: absolute;
-    left: 50%; bottom: 0;
-    transform: translate(-50%, 50%);
-
-    display: flex;
-    justify-content: space-evenly;
-    
-    padding: 1em;
-    margin: 0;
-    width: 100%;
-
-    font-size: 1rem;
-
-    pointer-events: none;
-}
-
-.card-icon-bar > a {
-    width: 2em;
-    height: 2em;
-
-    padding: 0;
-    
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    text-decoration: none;
-
-    pointer-events: initial;
-
-    transition: transform .1s ease-in-out;
-}
-
-.card-icon-bar > *:hover  { transform: scale(1.5); }
-.card-icon-bar > *:active { transform: scale(2);   }
-/* don't animate cosmetic card icons */
-.card-icon-bar > *.cosmetic { cursor: initial; transform: unset; }
-/* don't respond to blank card icons */
-.card-icon-bar > *.blank { pointer-events: none; transform: unset; }
-
 .target {
     position: absolute;
-    width: 240px; height: 144px;
     z-index: -1;
 
     /* tiny curve on corners */
@@ -202,18 +132,6 @@ svg.link line.selection-flash {
     stroke-width: 24px;
 }
 
-.has-image {
-    align-items: center;
-    text-align: center;
-}
-
-.has-image .card-text {
-    background-repeat: no-repeat;
-    background-position: center;
-    color: white;
-    text-shadow: 1px 1px 1px black, -1px 1px 1px black, -1px -1px 1px black, 1px -1px 1px black;
-}
-
 #left-sidebar {
     position: absolute;
     left: 0; top: 0; bottom: 0;
@@ -257,3 +175,87 @@ svg.link line.selection-flash {
     column-gap: 1em;
     row-gap: 1em;
 }
+
+
+/* CARDS */
+
+.has-image {
+    align-items: center;
+}
+
+.has-image .card-text {
+    background-repeat: no-repeat;
+
+    color: white;
+    text-align: center;
+    text-shadow: var(--black-text-outline);
+}
+
+.card-root {
+    position: absolute;
+
+    border-radius: 8px;
+    box-shadow: 0 3px 0 var(--card-edge-color, black);
+}
+
+.card-body {
+    position: relative; overflow: hidden; /* clipping */
+    width: 100%; height: 100%; margin: 0;
+    display: flex;
+    
+    background-color: var(--card-color, white);
+    border-radius: inherit;
+    background-size: cover;
+    background-position: center;
+}
+
+.card-text {
+    width: 100%;
+    padding: 16px;
+
+    color: var(--text-color, black);
+    font-size: var(--text-size, initial);
+    font-family: var(--text-font, "Lora", sans-serif);
+    text-align: var(--text-align, inherit);
+}
+
+.card-icon-bar {
+    position: absolute;
+    left: 50%; bottom: 0;
+    transform: translate(-50%, 50%);
+
+    display: flex;
+    justify-content: space-evenly;
+    
+    padding: 1em;
+    margin: 0;
+    width: 100%;
+
+    font-size: 1rem;
+
+    pointer-events: none;
+}
+
+.card-icon-bar > a {
+    width: 2em;
+    height: 2em;
+
+    padding: 0;
+    
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-decoration: none;
+
+    pointer-events: initial;
+
+    transition: transform .1s ease-in-out;
+}
+
+.card-icon-bar > *:hover  { transform: scale(1.5); }
+.card-icon-bar > *:active { transform: scale(2);   }
+/* don't animate cosmetic card icons */
+.card-icon-bar > *.cosmetic { cursor: initial; transform: unset; }
+/* don't respond to blank card icons */
+.card-icon-bar > *.blank { pointer-events: none; transform: unset; }
+

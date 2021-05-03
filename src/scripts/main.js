@@ -15,7 +15,7 @@ async function start() {
     const dataElement = ONE("#project-data");
     const player = ONE("body").getAttribute("data-player") === "true";
 
-    const save = await loadProject("save");
+    const save = undefined;//await loadProject("save");
     const data = (player || !save) ? JSON.parse(dataElement.innerHTML) : save;
 
     await test();
