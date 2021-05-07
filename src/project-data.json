@@ -101,7 +101,8 @@
           }
         ],
         "alttext": "",
-        "style": ""
+        "style": "",
+        "cardStyle": "STYLE-TERMINAL"
       },
       {
         "id": "mJP9ltsoHUUZt6AeFEKFU",
@@ -133,7 +134,8 @@
           }
         ],
         "alttext": "",
-        "style": ""
+        "style": "",
+        "cardStyle": "STYLE-GREEN"
       },
       {
         "id": "gG7kZm34yT1vDRsV63iZa",
@@ -165,7 +167,8 @@
           }
         ],
         "alttext": "",
-        "style": ""
+        "style": "",
+        "cardStyle": "STYLE-GRID"
       },
       {
         "id": "LwXRRCmrkrJc5x0s5mJwq",
@@ -197,7 +200,8 @@
           }
         ],
         "alttext": "",
-        "style": ""
+        "style": "",
+        "cardStyle": "STYLE-RED"
       },
       {
         "id": "PPQ-y8fInfIMFqFUd86tp",
@@ -2394,7 +2398,7 @@
         "properties": {
           "text-size": "30px",
           "text-center": true,
-          "card-color": "rgb(255, 255, 255, 25%)",
+          "card-color": "#00000040",
           "custom-css": ".card-body { align-items: center; font-weight: bold; } .card-root { --card-edge-color: rgba(0, 0, 0, 25%); }"
         }
       },
@@ -2402,21 +2406,21 @@
         "id": "STYLE-RED",
         "name": "red",
         "properties": {
-          "card-color": "#e17878"
+          "card-color": "#e17878ff"
         }
       },
       {
         "id": "STYLE-GREEN",
         "name": "green",
         "properties": {
-          "card-color": "#C3E178"
+          "card-color": "#C3E178ff"
         }
       },
       {
         "id": "STYLE-BLUE",
         "name": "blue",
         "properties": {
-          "card-color": "#78a4e1"
+          "card-color": "#78a4e1ff"
         }
       },
       {
@@ -2431,8 +2435,8 @@
         "name": "terminal",
         "properties": {
           "text-font": "monospace",
-          "text-color": "lime",
-          "card-color": "black"
+          "text-color": "#00ff00ff",
+          "card-color": "#000000FF"
         }
       }
     ]

@@ -144,7 +144,7 @@ svg.link line.selection-flash {
     flex-direction: column;
 }
 
-.editor-page > h2 {
+.editor-page > h1, h2 {
     margin: 0;
 }
 
@@ -158,24 +158,33 @@ svg.link line.selection-flash {
 }
 
 .settings-grid > span {
-    grid-column-start: 1;
-    grid-column-end: 2;
+    grid-column-start: 2;
+    grid-column-end: 3;
 }
 
 .settings-grid > input, .settings-grid > select {
-    grid-column-start: 2;
-    grid-column-end: 5;
+    grid-column-start: 3;
+    grid-column-end: 4;
 }
 
 .settings-grid {
     display: grid;
     
-    grid-template-columns: repeat(4, 1fr);
-
     column-gap: 1em;
     row-gap: 1em;
+
+    grid-template-columns: auto auto minmax(0, 1fr);
 }
 
+.settings-grid .check {
+    grid-column-start: 1;
+    grid-column-end: 2;
+    place-self: center;
+}
+
+.settings-grid input[type="checkbox"] {
+    transform: scale(1.5);
+}
 
 /* CARDS */
 

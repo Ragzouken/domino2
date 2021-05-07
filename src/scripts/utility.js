@@ -31,11 +31,16 @@ const ALL = (query, element = undefined) => Array.from((element || document).que
 const AsyncFunction = Object.getPrototypeOf(async function(){}).constructor
 
 /**
- * @param {HTMLElement} element 
+ * @template T
+ * @param {HTMLSelectElement} element 
+ * @param {T[]} data 
+ * @param {(data: T) => HTMLOptionElement} renderer 
  */
-function removeAllChildren(element) {
-    while (element.children.length) 
-        element.removeChild(element.children[0]);   
+ function refreshDropdown(element, data, renderer) {
+    const value = element.value;
+    const options = data.map(renderer);
+    element.replaceChildren(...options);
+    element.value = value;
 }
 
 /**

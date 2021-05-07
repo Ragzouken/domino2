@@ -6,10 +6,10 @@
  *   "custom-css": string,
  *   "text-font": string,
  *   "text-color": string,
- *   "text-size": number,
- *   "text-center": boolean,
+ *   "text-size": string,
+ *   "text-center": string,
  *   "card-color": string,
- *   "icon-hide-empty": boolean,
+ *   "icon-hide-empty": string,
  * }>} properties
  */
 

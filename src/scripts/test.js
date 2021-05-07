@@ -11,9 +11,13 @@ let cardEditor;
 /** @type {DominoBoardView} */
 let boardView;
 
+/** @type {CardStyleEditor} */
+let cardStyleEditor;
+
 async function test() {
     boardView = new DominoBoardView();
     cardEditor = new CardEditor();
+    cardStyleEditor = new CardStyleEditor();
 
     listen(scene.viewport, "dblclick", (event) => {
         killEvent(event);    
@@ -41,6 +45,7 @@ async function test() {
     
     setActionHandler("project/save", () => saveProject(boardView.projectData, "save"));
     setActionHandler("project/reset", () => boardView.loadProject(JSON.parse(ONE("#project-data").innerHTML)));
+    setActionHandler("project/clear-cards", () => Array.from(boardView.projectData.cards).forEach(deleteCard));
 
     setActionHandler("selection/copy-id", () => {
         const id = Array.from(selectedCards)[0].id;
@@ -100,6 +105,9 @@ function updateToolbar() {
 
     elementByPath("selection/link", "div").hidden = selectedCards.size > 1;
     elementByPath("selection/group", "div").hidden = selectedCards.size === 1;
+
+    elementByPath("selection/copy-id", "div").hidden = selectedCards.size > 1;
+    elementByPath("selection/edit", "div").hidden = selectedCards.size > 1;
 
     // selections
     const active = selectedGroups.length > 0 ? new Set(getGroupCards(selectedGroups[0])) : selectedCards;
@@ -452,7 +460,6 @@ function cardStyleToCss(style) {
         });
     }
 
-    console.log(rules);
     return rules.join("\n");
 }
 
@@ -460,6 +467,7 @@ function refreshCardStyles() {
     const element = document.getElementById("card-styles");
     const styles = boardView.projectData.cardStyles.map(cardStyleToCss);
     element.innerHTML = styles.join("\n");
+    cardStyleEditor.pullData();
 }
 
 /** @param {DominoDataCard} card */

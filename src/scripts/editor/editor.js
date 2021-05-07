@@ -10,7 +10,7 @@ function saveAs(blob, name) {
 /** @param {DominoDataProject} projectData */
 function createStandalonePlayer(projectData) {
     const clone = /** @type {HTMLElement} */ (document.documentElement.cloneNode(true));
-    ALL("[data-empty]", clone).forEach(removeAllChildren);
+    ALL("[data-empty]", clone).forEach((element) => element.replaceChildren());
     ALL("[data-editor-only]", clone).forEach((element) => element.remove());
     ONE("body", clone).setAttribute("data-player", "true");
     ONE("title", clone).innerHTML = projectData.details.name;

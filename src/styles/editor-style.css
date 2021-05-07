@@ -212,3 +212,17 @@ textarea {
 [data-path="card-editor/styles"] {
     flex: 1;
 }
+
+.card-style-settings-row {
+    display: flex;
+}
+
+#card-style-fields {
+    display: flex;
+    flex-direction: column;
+    gap: 1em;
+}
+
+#card-style-fields > h2 {
+    margin: 0;
+}

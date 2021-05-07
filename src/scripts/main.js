@@ -20,6 +20,7 @@ async function start() {
 
     await test();
     boardView.loadProject(data);
+    scene.frameRect({ x: 800, y: 400, width: 64, height: 64 }, .25, 1);
 
     if (player) {
         // data

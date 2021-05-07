@@ -24,7 +24,7 @@
 .skip-transition { transition: none !important; }
 
 /* make buttons inherit font */ 
-button, select, option { font-family: inherit; font-size: inherit; }
+button, select, option, input { font-family: inherit; font-size: inherit; }
 
 /* clickable things should use this cursor imo */
 button, a { cursor: pointer; }

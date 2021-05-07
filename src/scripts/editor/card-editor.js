@@ -3,13 +3,12 @@ class CardEditor {
         this.container = elementByPath("card-editor", "div");
         this.textInput = elementByPath("card-editor/text", "textarea");
         this.altTextInput = elementByPath("card-editor/image/alt", "textarea");
-        this.styleInput = elementByPath("card-editor/style", "textarea");
         this.styleList = elementByPath("card-editor/styles", "select");
 
         this.iconIconInputs = /** @type {HTMLInputElement[]} */ ([1, 2, 3, 4].map((i) => elementByPath(`card-editor/icons/${i}/icon`, "input")));
         this.iconActionInputs = /** @type {HTMLInputElement[]} */ ([1, 2, 3, 4].map((i) => elementByPath(`card-editor/icons/${i}/action`, "input")));
 
-        const inputs = [this.textInput, ...this.iconIconInputs, ...this.iconActionInputs, this.altTextInput, this.styleInput];
+        const inputs = [this.textInput, ...this.iconIconInputs, ...this.iconActionInputs, this.altTextInput];
         inputs.forEach((input) => input.addEventListener("input", () => this.pushData(this.card)));
 
         const imageInput = elementByPath("card-editor/image", "input");
@@ -30,6 +29,11 @@ class CardEditor {
         setActionHandler("card-editor/text/strike", () => this.wrapSelectedText("~~", "~~"));
         setActionHandler("card-editor/text/header", () => this.wrapSelectedText("##", "##"));
 
+        setActionHandler("card-editor/styles/edit", () => {
+            cardStyleEditor.open();
+            cardStyleEditor.setSelectedStyle(this.styleList.value);
+        });
+
         this.styleList.addEventListener("change", () => {
             this.card.cardStyle = this.styleList.value;
             this.pushData(this.card);
@@ -41,12 +45,11 @@ class CardEditor {
         this.container.hidden = false;
         this.card = card;
 
-        this.styleList.innerHTML = "";
-        const styles = [{id: "", name: "default"}, ...boardView.projectData.cardStyles];
-        styles.forEach((style) => {
-            const button = html("option", { value: style.id }, style.name);
-            this.styleList.appendChild(button);
-        });
+        refreshDropdown(
+            this.styleList,
+            [{id: "", name: "default"}, ...boardView.projectData.cardStyles],
+            (style) => html("option", { value: style.id }, style.name),
+        );
 
         this.pullData(this.card);
     }
@@ -60,7 +63,6 @@ class CardEditor {
     pullData(card) {
         this.textInput.value = card.text;
         this.altTextInput.value = card.alttext || "";
-        this.styleInput.value = card.style || "";
         this.styleList.value = card.cardStyle ?? "";
 
         card.icons.slice(0, 4).forEach((icon, i) => {
@@ -86,7 +88,6 @@ class CardEditor {
             };
         });
         card.alttext = this.altTextInput.value;
-        card.style = this.styleInput.value;
 
         boardView.cardToView.get(card).regenerate();
     }

@@ -1,4 +1,7 @@
 export {}
 
-declare global {
+declare global {    
+    interface HTMLElement {
+        replaceChildren(...nodes: (Node | string)[]): void;
+    }
 }

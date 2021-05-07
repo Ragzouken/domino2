@@ -27,6 +27,8 @@ html
             include scripts/test.js
         script(id="editor/card-editor.js")
             include scripts/editor/card-editor.js
+        script(id="editor/cardsty;e-editor.js")
+            include scripts/editor/cardstyle-editor.js
         script(id="editor/editor.js")
             include scripts/editor/editor.js
         script(id="player.js")
@@ -40,21 +42,22 @@ html
                 #cards(data-empty)
         #toolbar(data-block-clicks)
             .toolbar-group.icon-bar
-                .icon.disabled(data-action="global/undo" title="undo") ↩
-                .icon.disabled(data-action="global/redo" title="redo") ↪                
+                //.icon.disabled(data-action="global/undo" title="undo") ↩
+                //.icon.disabled(data-action="global/redo" title="redo") ↪                
                 .icon(data-action="global/home" title="jump to center") 🏠
 
             .toolbar-group.icon-bar(data-path="global")
-                //.icon#open-about(data-action="global/menu" title="information & settings") 🔨
+                .icon#open-about(data-action="global-editor/toggle" title="board settings") 🔨
                 //.icon(data-action="project/save" title="save in browser") 💾
                 .icon(data-action="project/export/html" title="export html") 📦
-                .icon(data-action="project/reset" title="reset to default") ❌
+                //.icon(data-action="project/reset" title="reset to default") ❌
+                .icon(data-action="project/clear-cards" title="delete all cards") 💥
 
             .toolbar-group.icon-bar(data-path="selection" hidden)
                 //.icon(data-action="selection/cancel" title="deselect") ❌
                 //.icon(data-action="selection/center" title="center selected") 🔎
-                .icon(data-action="selection/copy-id" title="copy card id") 🔗
-                .icon(data-action="selection/edit" title="edit cards") 📝
+                .icon(data-action="selection/copy-id" data-path="selection/copy-id" title="copy card id") 🔗
+                .icon(data-action="selection/edit" data-path="selection/edit" title="edit cards") 📝
                 .icon(data-action="selection/link" data-path="selection/link" title="link selected") ↗
                 .icon(data-action="selection/group" data-path="selection/group" title="group selected") 📁
                 .icon(data-action="selection/delete" title="delete selected") 💥
@@ -95,40 +98,32 @@ html
                         input(data-path=`card-editor/icons/${row}/action` type="text").icon-action
                 .editor-page(data-tab-body="card-editor/style")
                     select(data-path="card-editor/styles" size="3")
-                    textarea(data-path="card-editor/style" hidden)
+                    .button-row
+                        button(data-action="card-editor/styles/edit") edit
                 .editor-page(data-tab-body="card-editor/image")
                     .button-row
                         button(data-action="card-editor/image/upload") upload image
                         button(data-action="card-editor/image/remove") remove image
                         input(data-path="card-editor/image" type="file" accept="image/*" hidden)
                     textarea(data-path="card-editor/image/alt" placeholder="alt text" spellcheck="true")
-        .editor-blocker(data-action="global-editor/close" data-path="global-editor" data-block-clicks hidden)
-            #left-sidebar(data-block-clicks)
-                .tab-bar
-                    div(data-tab-toggle="global-editor/card-styles" data-tab-default) CARD STYLES
-                .editor-page(data-tab-body="global-editor/card-styles")
-                    .button-row
-                        select(data-path="global-editor/card-styles/selected")
-                            option default card
-                        button(data-action="global-editor/card-style/new") new style
-                    h2 text
-                    .settings-grid
-                        span font
-                        select
-                            option default font
-                        span size
-                        input(type="range")
-                        span color
-                        input(type="color")
-                        span alignment
-                        select
-                            option left
-                    h2 card
-                    .settings-grid
-                        span color
-                        input(type="color")
-                    h2 custom css
-                    textarea(data-path="global-editor/card-styles/selected/custom")
+        #left-sidebar(data-block-clicks data-path="global-editor" hidden)
+            .tab-bar
+                div(data-action="global-editor/close") close
+            .editor-page
+                h1 board title
+                .button-row
+                    input(type="text" data-path="global-editor/title")
+                h1 card styles
+                .button-row
+                    select(data-path="global-editor/card-styles/selected")
+                        option default card
+                    button(data-action="global-editor/card-style/new") new style
+                #card-style-fields
+                h2 custom css
+                textarea(data-path="global-editor/card-styles/selected/custom-css")
+                .button-row
+                    button(data-action="global-editor/card-style/selected/duplicate") duplicate style
+                    button(data-action="global-editor/card-style/selected/delete" data-path="global-editor/card-style/selected/delete") delete style
         script#project-data(type="text/json")
             include project-data.json
         script loadData();
