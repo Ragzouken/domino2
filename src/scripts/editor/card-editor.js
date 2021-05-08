@@ -11,11 +11,9 @@ class CardEditor {
         const inputs = [this.textInput, ...this.iconIconInputs, ...this.iconActionInputs, this.altTextInput];
         inputs.forEach((input) => input.addEventListener("input", () => this.pushData(this.card)));
 
-        const imageInput = elementByPath("card-editor/image", "input");
-        setActionHandler("card-editor/image/upload", () => imageInput.click());
-        listen(imageInput, "input", async () => {
-            this.card.image = await fileToCompressedImageURL(imageInput.files[0]);
-            imageInput.value = "";
+        setActionHandler("card-editor/image/upload", async () => {
+            const [file] = await pickFiles("image/*");
+            this.card.image = await fileToCompressedImageURL(file);
             this.pushData(this.card);
         });
 

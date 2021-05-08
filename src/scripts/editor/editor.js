@@ -28,3 +28,13 @@ setActionHandler("project/export/html", async () => {
     const blob = textToBlob(projectToHTML(), "text/html");
     saveAs(blob, name);
 });
+
+setActionHandler("project/import", async () => {
+    const [file] = await pickFiles("text/html");
+    const text = await textFromFile(file);
+    const html = await htmlFromText(text);
+
+    const json = ONE("#project-data", html).innerHTML;
+    const projectData = JSON.parse(json);
+    boardView.loadProject(projectData);
+});
