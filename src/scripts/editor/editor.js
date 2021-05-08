@@ -15,6 +15,7 @@ function createStandalonePlayer(projectData) {
     ONE("body", clone).setAttribute("data-player", "true");
     ONE("title", clone).innerHTML = projectData.details.name;
     ONE("#project-data", clone).innerHTML = JSON.stringify(projectData);
+    ONE('[data-path="global-editor"]', clone).hidden = true;
     return clone;
 }
 

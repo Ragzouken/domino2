@@ -11,6 +11,8 @@ class DominoBoardView {
         this.groupToView = new Map();
         /** @type {Map<DominoDataLink, DominoLinkView>} */
         this.linkToView = new Map();
+
+        this.editable = true;
     }
 
     /** @param {DominoDataProject} projectData */

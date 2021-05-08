@@ -526,6 +526,7 @@ class DominoLinkView {
 
         svgToLink.set(this.root, this.link);
         this.root.addEventListener("pointerdown", (event) => {
+            if (!boardView.editable) return;
             killEvent(event);
             dragLinks(event);
         });
@@ -590,6 +591,7 @@ class DominoGroupView {
         background.appendChild(this.root);
         svgToGroup.set(this.root, this.group);
         this.root.addEventListener("pointerdown", (event) => {
+            if (!boardView.editable) return;
             killEvent(event);
             dragGroups(event);
         });
@@ -661,6 +663,7 @@ class DominoCardView {
         });
 
         listen(this.rootElement, "pointerdown", (event) => {
+            if (!boardView.editable) return;
             killEvent(event);
 
             let drags;
@@ -678,6 +681,7 @@ class DominoCardView {
         });
 
         listen(this.rootElement, "dblclick", (event) => {
+            if (!boardView.editable) return;
             killEvent(event);
             deselectCards();
             selectCard(this.card);

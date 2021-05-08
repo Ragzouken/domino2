@@ -41,7 +41,7 @@
     display: unset;
 }
 
-.card-root:hover .resize-handle {
+body:not([data-player]) .card-root:hover .resize-handle {
     display: unset;
 }
 
@@ -225,4 +225,8 @@ textarea {
 
 #card-style-fields > h2 {
     margin: 0;
+}
+
+body[data-player] #toolbar {
+    display: none;
 }

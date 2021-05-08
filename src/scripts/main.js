@@ -22,8 +22,10 @@ async function start() {
     boardView.loadProject(data);
     scene.frameRect({ x: 800, y: 400, width: 64, height: 64 }, .25, 1);
 
+    console.log("player", player);
     if (player) {
         // data
+        boardView.editable = false;
     } else {
         // data
     }
