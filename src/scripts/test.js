@@ -926,6 +926,46 @@ function trackGesture(event) {
     return emitter;
 }
 
+class PointerDrag {
+    /** 
+     * @param {PointerEvent} event
+     */
+    constructor(event, { clickMovementLimit = 5 } = {}) {
+        this.events = new EventEmitter();
+        this.pointerId = event.pointerId;
+        this.clickMovementLimit = 5;
+        this.totalMovement = 0;
+
+        this.downEvent = event;
+        this.lastEvent = event; 
+
+        this.removes = [
+            listen(document, "pointerup", (event) => {
+                if (event.pointerId !== this.pointerId) return;
+    
+                this.lastEvent = event;
+                this.removes.forEach((remove) => remove());
+                this.events.emit("pointerup", event);
+                if (this.totalMovement <= clickMovementLimit) {
+                    this.events.emit("click", event);
+                }
+            }),
+            listen(document, "pointermove", (event) => {
+                if (event.pointerId !== this.pointerId) return;
+    
+                this.totalMovement += Math.abs(event.movementX);
+                this.totalMovement += Math.abs(event.movementY);
+                this.lastEvent = event;
+                this.events.emit("pointermove", event);
+            }),
+        ];
+    }
+
+    cancel() {
+        this.removes.forEach((remove) => remove());
+    }
+}
+
 const imageSize = [512, 512];
 
 async function fileToCompressedImageURL(file) {

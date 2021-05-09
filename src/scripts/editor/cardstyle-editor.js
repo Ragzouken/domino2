@@ -169,6 +169,7 @@ class CardStyleEditor {
         const container = document.getElementById("card-style-fields");
 
         this.titleInput = elementByPath("global-editor/title", "input");
+        this.nameInput = elementByPath("global-editor/card-styles/selected/name", "input");
         this.textFontRow = new CardStyleSelect(this, "font", "text-font");
 
         this.rows = [
@@ -192,6 +193,11 @@ class CardStyleEditor {
                 ...this.rows[3].elements,
             ),
         );
+
+        this.nameInput.addEventListener("input", () => {
+            const style = this.getSelectedStyle();
+            if (style) style.name = this.nameInput.value;
+        });
 
         this.styleSelect = elementByPath("global-editor/card-styles/selected", "select");
         this.styleSelect.addEventListener("change", () => {
@@ -265,9 +271,9 @@ class CardStyleEditor {
 
         const style = this.getSelectedStyle();
         if (!style) return;
-        
-        this.rows.forEach((row) => row.pullData(style));
 
+        this.nameInput.value = style.name;
+        this.rows.forEach((row) => row.pullData(style));
         this.customCssInput.value = style.properties["custom-css"] || "";
 
         const deleteButton = elementByPath("global-editor/card-style/selected/delete", "button");

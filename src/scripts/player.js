@@ -43,6 +43,15 @@ class DominoBoardView {
     }
 }
 
+class TransformGesture {
+    tryAddPointerDrag(event) {
+        const drag = new PointerDrag(event);
+        drag.events.on("pointermove", () => {
+
+        });
+    }
+}
+
 class PanningScene {
     get hidden() { return this.container.hidden; }
     set hidden(value) { this.container.hidden = value; }
@@ -56,34 +65,68 @@ class PanningScene {
         this.transform = new DOMMatrix();
         this.locked = false;
 
+        this.pointerA = undefined;
+        this.pointerB = undefined;
+        let ratio = 1;
+
         this.viewport.addEventListener("pointerdown", (event) => {
             if (this.hidden || this.locked) return;
             killEvent(event);
 
-            // determine and save the relationship between mouse and scene
-            // G = M1^ . S (scene relative to mouse)
-            const mouse = this.mouseEventToViewportTransform(event);
-            const grab = mouse.invertSelf().multiplySelf(this.transform);
-            document.body.style.setProperty("cursor", "grabbing");
-            this.viewport.style.setProperty("cursor", "grabbing");
-            this.container.classList.toggle("skip-transition", true);
-
-            const gesture = trackGesture(event);
-            gesture.on("pointermove", (event) => {
-                // preserve the relationship between mouse and scene
-                // D2 = M2 . G (drawing relative to scene)
+            if (!this.pointerA) {
+                // determine and save the relationship between mouse and scene
+                // G = M1^ . S (scene relative to mouse)
                 const mouse = this.mouseEventToViewportTransform(event);
-                this.transform = mouse.multiply(grab);
-                this.refresh();
-            });
-            gesture.on("pointerup", (event) => {
-                document.body.style.removeProperty("cursor");
-                this.viewport.style.removeProperty("cursor");
-                this.container.classList.toggle("skip-transition", false);
-            });
-            gesture.on("click", (event) => {
-                deselectAll();
-            })
+                const grab = mouse.invertSelf().multiplySelf(this.transform);
+                document.body.style.setProperty("cursor", "grabbing");
+                this.viewport.style.setProperty("cursor", "grabbing");
+                this.container.classList.toggle("skip-transition", true);
+
+                ratio = 1;
+                const drag = new PointerDrag(event);
+                drag.events.on("pointermove", (event) => {
+                    // preserve the relationship between mouse and scene
+                    // D2 = M2 . G (drawing relative to scene)
+                    const mouse = this.mouseEventToViewportTransform(event);
+                    mouse.scaleSelf(ratio, ratio);
+                    this.transform = mouse.multiply(grab);
+                    this.refresh();
+                });
+                drag.events.on("pointerup", (event) => {
+                    document.body.style.removeProperty("cursor");
+                    this.viewport.style.removeProperty("cursor");
+                    this.container.classList.toggle("skip-transition", false);
+
+                    if (this.pointerB) this.pointerB.cancel();
+
+                    this.pointerA = undefined;
+                    this.pointerB = undefined;
+                });
+                drag.events.on("click", (event) => {
+                    deselectAll();
+                });
+
+                this.pointerA = drag;
+            } else if (!this.pointerB) {
+                const mouseB = this.mouseEventToViewportTransform(event);
+                const mouseA = this.mouseEventToViewportTransform(this.pointerA.lastEvent);
+                const dx = mouseB.e - mouseA.e;
+                const dy = mouseB.f - mouseA.f;
+                const initialD = Math.sqrt(dx*dx + dy*dy); 
+
+                this.pointerB = new PointerDrag(event);
+                this.pointerB.events.on("pointermove", (event) => {
+                    const mouseB = this.mouseEventToViewportTransform(event);
+                    const mouseA = this.mouseEventToViewportTransform(this.pointerA.lastEvent);
+                    const dx = mouseB.e - mouseA.e;
+                    const dy = mouseB.f - mouseA.f;
+                    const currentD = Math.sqrt(dx*dx + dy*dy);
+                    ratio = currentD / initialD;
+                });
+                this.pointerB.events.on("pointerup", () => {
+                    this.pointerB = undefined;
+                });
+            }
         });
         
         this.viewport.addEventListener('wheel', (event) => {
