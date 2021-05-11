@@ -1,7 +1,7 @@
 function deleteCardStyle(style) {
     arrayDiscard(boardView.projectData.cardStyles, style);
     boardView.projectData.cards.forEach((card) => {
-        if (card.cardStyle === style.id) delete card.cardStyle;
+        if (card.style === style.id) delete card.style;
     });
     refreshCardStyles();
 }
@@ -169,6 +169,8 @@ class CardStyleEditor {
         const container = document.getElementById("card-style-fields");
 
         this.titleInput = elementByPath("global-editor/title", "input");
+        this.backgroundColorInput = elementByPath("global-editor/style/background-color", "input");
+
         this.nameInput = elementByPath("global-editor/card-styles/selected/name", "input");
         this.textFontRow = new CardStyleSelect(this, "font", "text-font");
 
@@ -193,6 +195,11 @@ class CardStyleEditor {
                 ...this.rows[3].elements,
             ),
         );
+
+        this.backgroundColorInput.addEventListener("input", () => {
+            boardView.projectData.boardStyle["background-color"] = this.backgroundColorInput.value;
+            refreshBoardStyle();
+        });
 
         this.nameInput.addEventListener("input", () => {
             const style = this.getSelectedStyle();
@@ -253,6 +260,7 @@ class CardStyleEditor {
 
     pullData() {
         this.titleInput.value = boardView.projectData.details.title;
+        this.backgroundColorInput.value = boardView.projectData.boardStyle["background-color"] || "#b7b8b0";
 
         refreshDropdown(
             this.styleSelect,

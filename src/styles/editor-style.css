@@ -72,7 +72,7 @@ body:not([data-player]) .card-root:hover .resize-handle {
     left: 50%; bottom: 0;
     transform: translate(-50%, 0);
 
-    background: rgb(240, 248, 255);
+    background: var(--card-color);
     pointer-events: initial;
     cursor: initial;
 
@@ -108,9 +108,16 @@ body:not([data-player]) .card-root:hover .resize-handle {
     text-align: center;
 }
 
+.tab-bar > button {
+    border: none;
+    background: inherit;
+    color: inherit;
+    text-transform: uppercase;
+}
+
 .tab-bar > *.active {
     color: black;
-    background: rgb(240, 248, 255);
+    background: var(--card-color);
 }
 
 .tab-page {
@@ -131,6 +138,8 @@ body:not([data-player]) .card-root:hover .resize-handle {
 
     flex-direction: column;
     gap: 1em;
+
+    overflow: auto;
 }
 
 /* editor icons page styles */
@@ -164,6 +173,7 @@ body:not([data-player]) .card-root:hover .resize-handle {
 
 textarea {
     flex: 1;
+    min-height: 10em;
 }
 
 .button-row {
@@ -229,4 +239,11 @@ textarea {
 
 body[data-player] #toolbar {
     display: none;
+}
+
+.button-column {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 1em;
 }

@@ -30,10 +30,11 @@ class CardEditor {
         setActionHandler("card-editor/styles/edit", () => {
             cardStyleEditor.open();
             cardStyleEditor.setSelectedStyle(this.styleList.value);
+            switchTab("sidebar/board");
         });
 
         this.styleList.addEventListener("change", () => {
-            this.card.cardStyle = this.styleList.value;
+            this.card.style = this.styleList.value;
             this.pushData(this.card);
         });
     }
@@ -61,7 +62,7 @@ class CardEditor {
     pullData(card) {
         this.textInput.value = card.text;
         this.altTextInput.value = card.alttext || "";
-        this.styleList.value = card.cardStyle ?? "";
+        this.styleList.value = card.style ?? "";
 
         card.icons.slice(0, 4).forEach((icon, i) => {
             this.iconIconInputs[i].value = icon.icon;

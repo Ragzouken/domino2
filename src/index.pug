@@ -44,15 +44,8 @@ html
             .toolbar-group.icon-bar
                 //.icon.disabled(data-action="global/undo" title="undo") ↩
                 //.icon.disabled(data-action="global/redo" title="redo") ↪                
-                .icon(data-action="global/home" title="jump to center") 🏠
-
-            .toolbar-group.icon-bar(data-path="global")
                 .icon#open-about(data-action="global-editor/toggle" title="board settings") 🔨
                 //.icon(data-action="project/save" title="save in browser") 💾
-                .icon(data-action="project/import" title="import html") 📂
-                .icon(data-action="project/export/html" title="export html") 📦
-                //.icon(data-action="project/reset" title="reset to default") ❌
-                .icon(data-action="project/clear-cards" title="delete all cards") 💥
 
             .toolbar-group.icon-bar(data-path="selection" hidden)
                 //.icon(data-action="selection/cancel" title="deselect") ❌
@@ -108,11 +101,25 @@ html
                     textarea(data-path="card-editor/image/alt" placeholder="alt text" spellcheck="true")
         #left-sidebar(data-block-clicks data-path="global-editor" hidden)
             .tab-bar
-                div(data-action="global-editor/close") close
-            .editor-page
-                h1 board title
+                button(data-action="global-editor/close") ◀
+                button(data-tab-toggle="sidebar/about" data-tab-default) about
+                button(data-tab-toggle="sidebar/board") board
+            .editor-page(data-tab-body="sidebar/about")
+                include:markdown-it(html) about.md
+            .editor-page(data-tab-body="sidebar/board")
+                h1 board settings
+                h2 data
+                .button-column
+                    button(data-action="project/import" title="import from previous export") 📂 import from html
+                    button(data-action="project/export/html" title="export to standalone webpage") 📦 export to html
+                    button(data-action="project/publish/neocities" title="export html directly to neocities website") 😻 publish to neocities
+                    button(data-action="project/clear-cards" title="delete all cards from the board") ❌ remove all cards
+                h2 title
                 .button-row
                     input(type="text" data-path="global-editor/title")
+                h2 background color
+                .button-row
+                    input(type="color" data-path="global-editor/style/background-color")
                 h1 card styles
                 .button-row
                     select(data-path="global-editor/card-styles/selected")

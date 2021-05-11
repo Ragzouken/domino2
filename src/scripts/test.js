@@ -92,12 +92,10 @@ function getCardsByIds(ids) {
 }
 
 function updateToolbar() {
-
     const selection = selectedCards.size > 0;
     const selectedGroup = selectedGroups.length > 0;
     const selectedLink = selectedLinks.length > 0;
 
-    elementByPath("global", "div").hidden = selection || selectedGroup || selectedLink || !!linking;
     elementByPath("selection", "div").hidden = !selection || !!linking;
     elementByPath("group", "div").hidden = !selectedGroup || !!linking;
     elementByPath("link", "div").hidden = !selectedLink || !!linking;
@@ -470,6 +468,15 @@ function refreshCardStyles() {
     cardStyleEditor.pullData();
 }
 
+function refreshBoardStyle() {
+    const style = boardView.projectData.boardStyle;
+    const bgcolor = style["background-color"];
+
+    if (bgcolor) {
+        ONE("#frame").style.setProperty("background-color", bgcolor);
+    }
+}
+
 /** @param {DominoDataCard} card */
 function boundCard(card) {
     return new DOMRect(
@@ -725,7 +732,7 @@ class DominoCardView {
         const bounds = boundCard(this.card);
         this.rootElement.style.width = `${bounds.width}px`;
         this.rootElement.style.height = `${bounds.height}px`;
-        this.rootElement.setAttribute("class", "card-root " + this.card.cardStyle ?? "");
+        this.rootElement.setAttribute("class", "card-root " + this.card.style ?? "");
         this.setSelected(selectedCards.has(this.card));
 
         this.card.icons.forEach((data, i) => {
@@ -735,12 +742,6 @@ class DominoCardView {
             element.classList.toggle('blank', data.icon === '');
             element.classList.toggle('cosmetic', data.action === '');
         });
-
-        if (this.card.style) {
-            this.bodyElement.setAttribute("style", this.card.style);
-        } else {
-            this.bodyElement.removeAttribute("style");
-        }
 
         if (this.card.image) {
             this.bodyElement.style.setProperty('background-image', `url(${this.card.image})`);

@@ -4,6 +4,8 @@
     --link-color: rgba(113, 205, 90, 0.5);
 
     --black-text-outline: 1px 1px 1px black, -1px 1px 1px black, -1px -1px 1px black, 1px -1px 1px black;
+
+    --card-color: rgb(240, 248, 255);
 }
 
 html, body {
@@ -135,16 +137,15 @@ svg.link line.selection-flash {
 #left-sidebar {
     position: absolute;
     left: 0; top: 0; bottom: 0;
-    min-width: 25%;
-    max-width: 50%;
+    width: 420px;
 
-    background: white;
+    background: var(--card-color);
 
     display: flex;
     flex-direction: column;
 }
 
-.editor-page > h1, h2 {
+.editor-page > h1, h2, p {
     margin: 0;
 }
 

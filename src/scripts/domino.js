@@ -9,7 +9,6 @@
  *   "text-size": string,
  *   "text-center": string,
  *   "card-color": string,
- *   "icon-hide-empty": string,
  * }>} properties
  */
 
@@ -29,7 +28,6 @@
  * @property {string?} image
  * @property {string?} alttext
  * @property {string?} style
- * @property {string?} cardStyle
  */
 
 /** 
@@ -53,23 +51,18 @@
  */
 
 /**
+ * @typedef {Partial<{
+ *   "custom-css": string,
+ *   "background-color": string,
+ * }>} DominoDataBoardStyle
+ */
+
+/**
  * @typedef {Object} DominoDataProject
  * @property {DominoDataProjectDetails} details
  * @property {DominoDataCard[]} cards
  * @property {DominoDataGroup[]} groups
  * @property {DominoDataLink[]} links
  * @property {DominoDataCardStyle[]} cardStyles
+ * @property {DominoDataBoardStyle} boardStyle
  */
-
-/** @type {DominoDataProject} */
-const EMPTY_PROJECT_DATA = {
-    details: {
-        id: "EMPTY.PROJECT",
-        name: "project",
-        title: "empty project"
-    },
-    cards: [],
-    groups: [],
-    links: [],
-    cardStyles: [],
-}

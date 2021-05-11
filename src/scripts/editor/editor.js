@@ -39,3 +39,40 @@ setActionHandler("project/import", async () => {
     const projectData = JSON.parse(json);
     boardView.loadProject(projectData);
 });
+
+setActionHandler("project/publish/neocities", async () => {
+    const ready = new Promise((resolve, reject) => {
+        const remove = listen(window, "message", (event) => {
+            if (event.origin !== "https://kool.tools") return;
+            remove();
+            resolve();
+        });
+    });
+
+    const success = new Promise((resolve, reject) => {
+        const remove = listen(window, "message", (event) => {
+            if (event.origin !== "https://kool.tools") return;
+
+            if (event.data.error) {
+                remove();
+                reject(event.data.error);
+            } else if (event.data.url) {
+                remove();
+                resolve(event.data.url);
+            }
+        });
+    });
+
+    const name = boardView.projectData.details.title.replace(/[^a-z0-9]/gi, '_').toLowerCase();
+    const popup = window.open(
+        "https://kool.tools/neocities-publisher/index.html", 
+        "neocities publisher",
+        "left=10,top=10,width=320,height=320");
+    const html = projectToHTML();
+    await ready;
+    popup.postMessage({ name, html }, "https://kool.tools");
+    const url = await success;
+    popup.close();
+    //openButton.disabled = false;
+    //openButton.onclick = () => window.open(url);
+});

@@ -1,6 +1,5 @@
 /** @param {DominoDataProject} projectData */
 function repairProjectData(projectData) {
-    projectData.cardStyles ||= [];
 }
 
 class DominoBoardView {
@@ -30,6 +29,7 @@ class DominoBoardView {
 
         refreshSVGs();
         refreshCardStyles();
+        refreshBoardStyle();
     }
 
     clear() {
