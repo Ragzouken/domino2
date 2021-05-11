@@ -11,17 +11,16 @@ i'm [mark wonnacott a.k.a candle][me] and i created domino as a
 writing jams.
 
 ## thanks
-**Em Reed** for [Manifesto Jam][3] and [Speculation Jam][4] which have
-deeply inspired me and also motivated the creation of this tool. also for 
-certain flippant comments that pushed me into developing web based tools.
+**Em Reed** for her writing jams--especially [Speculation Jam][1],
+[List Jam][2], [Alternative Ecologies Jam][3] which have deeply inspired me and
+also motivated the creation of this tool.
+
+**Max**, **Jazz**, **Ludonaut** for early testing and bug reports.
 
 [me]: https://twitter.com/ragzouken
 [domino]: https://kool.tools/domino/
 [source]: https://github.com/Ragzouken/domino2
 [0]: https://kool.tools/2020/02/26/speculations.html
-[3]: https://itch.io/jam/manifesto-jam
-[4]: https://itch.io/jam/speculation-jam
-[5]: https://github.com/synth-ruiner/image-to-bitsy
-[6]: https://solar.lowtechmagazine.com/
-[7]: https://twinery.org/
-[9]: https://zenzoa.itch.io/mosi
+[1]: https://itch.io/jam/speculation-jam
+[2]: https://itch.io/jam/list-jam
+[3]: https://itch.io/jam/alternative-ecologies-jam

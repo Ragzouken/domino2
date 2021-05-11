@@ -229,6 +229,11 @@ svg.link line.selection-flash {
     text-align: var(--text-align, inherit);
 }
 
+.card-text > h3 {
+    margin: 0;
+    margin-bottom: .5em;
+}
+
 .card-icon-bar {
     position: absolute;
     left: 50%; bottom: 0;
