@@ -1,26 +1,28 @@
 .editor-blocker(data-action="card-editor/close" data-path="card-editor" data-block-clicks hidden)
     .editor-panel(data-block-clicks)
         .tab-bar
-            div(data-tab-toggle="card-editor/text" data-tab-default) TEXT
-            div(data-tab-toggle="card-editor/icons") ICONS
-            div(data-tab-toggle="card-editor/style") STYLE
-            div(data-tab-toggle="card-editor/image") IMAGE
-        .editor-page.tab-page(data-tab-body="card-editor/text")
+            button(data-action="card-editor/close") ◀
+            button(data-tab-toggle="card-editor/body" data-tab-default) BODY
+            button(data-tab-toggle="card-editor/style") STYLE
+        .editor-page.tab-page(data-tab-body="card-editor/body")
+            h2 text
             .button-row
                 button(data-action="card-editor/text/bold") bold
                 button(data-action="card-editor/text/italic") italic
                 button(data-action="card-editor/text/strike") strike
                 button(data-action="card-editor/text/header") header
             textarea(data-path="card-editor/text" spellcheck="true")
-        .editor-page.tab-page(data-tab-body="card-editor/icons")
-            each row in [1, 2, 3, 4]
-                input(data-path=`card-editor/icons/${row}/icon` type="text").icon-select
-                input(data-path=`card-editor/icons/${row}/action` type="text").icon-action
+            h2 icons
+            #card-editor-icons
+                each row in [1, 2, 3, 4]
+                    input(data-path=`card-editor/icons/${row}/icon` type="text").icon-select
+                    input(data-path=`card-editor/icons/${row}/action` type="text").icon-action
         .editor-page(data-tab-body="card-editor/style")
+            h2 style
             select(data-path="card-editor/styles" size="3")
             .button-row
                 button(data-action="card-editor/styles/edit") edit
-        .editor-page(data-tab-body="card-editor/image")
+            h2 image
             .button-row
                 button(data-action="card-editor/image/upload") upload image
                 button(data-action="card-editor/image/remove") remove image
