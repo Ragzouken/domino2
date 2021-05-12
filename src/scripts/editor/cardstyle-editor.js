@@ -214,7 +214,10 @@ class CardStyleEditor {
         this.customCssInput = elementByPath("global-editor/card-styles/selected/custom-css", "textarea");
         this.customCssInput.addEventListener("input", () => {
             const style = this.getSelectedStyle();
-            if (style) style.properties["custom-css"] = this.customCssInput.value;
+            if (style) {
+                style.properties["custom-css"] = this.customCssInput.value;
+                refreshCardStyles();
+            }
         });
 
         this.titleInput.addEventListener("input", () => {

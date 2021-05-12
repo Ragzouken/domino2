@@ -1,0 +1,35 @@
+#left-sidebar(data-block-clicks data-path="global-editor" hidden)
+    .tab-bar
+        button(data-action="global-editor/close") ◀
+        button(data-tab-toggle="sidebar/about" data-tab-default) about
+        button(data-tab-toggle="sidebar/board") board
+    .editor-page(data-tab-body="sidebar/about")
+        include:markdown-it(html) /about.md
+    .editor-page(data-tab-body="sidebar/board")
+        h1 board settings
+        h2 data
+        .button-column
+            button(data-action="project/import" title="import from previous export") 📂 import from html
+            button(data-action="project/export/html" title="export to standalone webpage") 📦 export to html
+            button(data-action="project/publish/neocities" title="export html directly to neocities website") 😻 publish to neocities
+            button(data-action="project/clear-cards" title="delete all cards from the board") ❌ remove all cards
+        h2 title
+        .button-row
+            input(type="text" data-path="global-editor/title")
+        h2 background color
+        .button-row
+            input(type="color" data-path="global-editor/style/background-color")
+        h1 card styles
+        .button-row
+            select(data-path="global-editor/card-styles/selected")
+                option default card
+            button(data-action="global-editor/card-style/new") new style
+        h2 name
+        .button-row
+            input(type="text" data-path="global-editor/card-styles/selected/name")
+        #card-style-fields
+        h2 custom css
+        textarea(data-path="global-editor/card-styles/selected/custom-css")
+        .button-row
+            button(data-action="global-editor/card-style/selected/duplicate") duplicate style
+            button(data-action="global-editor/card-style/selected/delete" data-path="global-editor/card-style/selected/delete") delete style

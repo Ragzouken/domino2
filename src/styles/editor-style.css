@@ -83,6 +83,13 @@ body:not([data-player]) .card-root:hover .resize-handle {
 
     display: flex;
     flex-direction: column;
+
+    left: 0; top: 0; bottom: 0;
+    width: 420px;
+    height: 100%;
+    max-height: none;
+    max-width: none;
+    transform: none;
 }
 
 #content-input {
