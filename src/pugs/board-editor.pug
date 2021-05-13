@@ -1,0 +1,13 @@
+.sidebar-header
+    .button-column
+        button(data-action="project/import" title="import from previous export") 📂 import from html
+        button(data-action="project/export/html" title="export to standalone webpage") 📦 export to html
+        button(data-action="project/publish/neocities" title="export html directly to neocities website") 😻 publish to neocities
+        button(data-action="project/clear-cards" title="delete all cards from the board") ❌ remove all cards
+.sidebar-panel
+    h2 title
+    .button-row
+        input(type="text" data-path="global-editor/title")
+    h2 background color
+    .button-row
+        input(type="color" data-path="global-editor/style/background-color")

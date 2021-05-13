@@ -5,7 +5,7 @@
 
     --black-text-outline: 1px 1px 1px black, -1px 1px 1px black, -1px -1px 1px black, 1px -1px 1px black;
 
-    --card-color: rgb(240, 248, 255);
+    --card-color: white;
 }
 
 html, body {
@@ -137,7 +137,7 @@ svg.link line.selection-flash {
 #left-sidebar {
     position: absolute;
     left: 0; top: 0; bottom: 0;
-    width: 420px;
+    width: 400px;
 
     background: var(--card-color);
 

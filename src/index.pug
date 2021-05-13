@@ -48,13 +48,7 @@ html
                 //.icon(data-action="project/save" title="save in browser") 💾
 
             .toolbar-group.icon-bar(data-path="selection" hidden)
-                //.icon(data-action="selection/cancel" title="deselect") ❌
-                //.icon(data-action="selection/center" title="center selected") 🔎
                 .icon(data-action="selection/copy-id" data-path="selection/copy-id" title="copy card id") 🔗
-                .icon(data-action="selection/edit" data-path="selection/edit" title="edit cards") 📝
-                .icon(data-action="selection/link" data-path="selection/link" title="link selected") ↗
-                .icon(data-action="selection/group" data-path="selection/group" title="group selected") 📁
-                .icon(data-action="selection/delete" title="delete selected") 💥
             
             .toolbar-group.icon-bar(data-path="group" hidden)
                 //.icon(data-action="group/deselect" title="deselect") ❌
@@ -72,7 +66,7 @@ html
                 span click a card to link to
                 .icon(data-action="picker/cancel" title="cancel picking") ❌
 
-        include pugs/card-editor.pug
+        //include pugs/card-editor.pug
         include pugs/global-editor.pug
         script#project-data(type="text/json")
             include project-data.json

@@ -96,16 +96,16 @@ function updateToolbar() {
     const selectedGroup = selectedGroups.length > 0;
     const selectedLink = selectedLinks.length > 0;
 
-    elementByPath("selection", "div").hidden = !selection || !!linking;
+    //elementByPath("selection", "div").hidden = !selection || !!linking;
     elementByPath("group", "div").hidden = !selectedGroup || !!linking;
     elementByPath("link", "div").hidden = !selectedLink || !!linking;
     elementByPath("picker", "div").hidden = !linking;
 
-    elementByPath("selection/link", "div").hidden = selectedCards.size > 1;
-    elementByPath("selection/group", "div").hidden = selectedCards.size === 1;
+    elementByPath("selection/link", "button").hidden = selectedCards.size > 1;
+    elementByPath("selection/group", "button").hidden = selectedCards.size === 1;
 
-    elementByPath("selection/copy-id", "div").hidden = selectedCards.size > 1;
-    elementByPath("selection/edit", "div").hidden = selectedCards.size > 1;
+    //elementByPath("selection/copy-id", "div").hidden = selectedCards.size > 1;
+    //elementByPath("selection/edit", "div").hidden = selectedCards.size > 1;
 
     // selections
     const active = selectedGroups.length > 0 ? new Set(getGroupCards(selectedGroups[0])) : selectedCards;
@@ -223,12 +223,18 @@ function editSelected() {
 }
 
 function selectCard(card) {
+    if (selectedCards.size === 0) {
+        switchTab("sidebar/selection");
+    }
+
     selectedCards.add(card);
     boardView.cardToView.get(card).setSelected(true);
 
     deselectGroup();
     deselectLink();
     updateToolbar();
+
+    editSelected();
 }
 
 function deselectCard(card) {

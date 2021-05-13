@@ -1,6 +1,6 @@
 class CardEditor {
     constructor() {
-        this.container = elementByPath("card-editor", "div");
+        //this.container = elementByPath("card-editor", "div");
         this.textInput = elementByPath("card-editor/text", "textarea");
         this.altTextInput = elementByPath("card-editor/image/alt", "textarea");
         this.styleList = elementByPath("card-editor/styles", "select");
@@ -30,7 +30,7 @@ class CardEditor {
         setActionHandler("card-editor/styles/edit", () => {
             cardStyleEditor.open();
             cardStyleEditor.setSelectedStyle(this.styleList.value);
-            switchTab("sidebar/board");
+            switchTab("sidebar/styles");
         });
 
         this.styleList.addEventListener("change", () => {
@@ -41,7 +41,7 @@ class CardEditor {
 
     /** @param {DominoDataCard} card */
     open(card) {
-        this.container.hidden = false;
+        //this.container.hidden = false;
         this.card = card;
 
         refreshDropdown(
@@ -54,7 +54,7 @@ class CardEditor {
     }
 
     close() {
-        this.container.hidden = true;
+        //this.container.hidden = true;
         this.card = undefined;
     }
 

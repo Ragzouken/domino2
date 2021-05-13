@@ -1,0 +1,15 @@
+.sidebar-header
+    .button-row
+        select(data-path="global-editor/card-styles/selected")
+            option default card
+        button(data-action="global-editor/card-style/new") new style
+.sidebar-panel
+    h2 name
+    .button-row
+        input(type="text" data-path="global-editor/card-styles/selected/name")
+    #card-style-fields
+    h2 custom css
+    textarea(data-path="global-editor/card-styles/selected/custom-css")
+    .button-row
+        button(data-action="global-editor/card-style/selected/duplicate") duplicate style
+        button(data-action="global-editor/card-style/selected/delete" data-path="global-editor/card-style/selected/delete") delete style

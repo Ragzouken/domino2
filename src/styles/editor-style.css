@@ -124,7 +124,7 @@ body:not([data-player]) .card-root:hover .resize-handle {
 
 .tab-bar > *.active {
     color: black;
-    background: var(--card-color);
+    background: lightblue;
 }
 
 .tab-page {
@@ -229,6 +229,7 @@ textarea {
 
 [data-path="card-editor/styles"] {
     flex: 1;
+    min-height: 10em;
 }
 
 .card-style-settings-row {
@@ -253,5 +254,35 @@ body[data-player] #toolbar {
     display: flex;
     flex-direction: column;
     align-items: stretch;
+    gap: 1em;
+}
+
+/* sidebar stuff */
+.sidebar-page {
+    height: 100%;
+    overflow: auto;
+
+    display: flex;
+    flex-direction: column;
+}
+
+.sidebar-header {
+    padding: 1em;
+
+    display: flex;
+    flex-direction: column;
+    gap: 1em;
+
+    background: lightblue;
+}
+
+.sidebar-panel {
+    height: 100%;
+    overflow: auto;
+
+    padding: 1em;
+
+    display: flex;
+    flex-direction: column;
     gap: 1em;
 }
