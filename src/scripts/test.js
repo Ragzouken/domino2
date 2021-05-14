@@ -96,16 +96,12 @@ function updateToolbar() {
     const selectedGroup = selectedGroups.length > 0;
     const selectedLink = selectedLinks.length > 0;
 
-    //elementByPath("selection", "div").hidden = !selection || !!linking;
-    elementByPath("group", "div").hidden = !selectedGroup || !!linking;
-    elementByPath("link", "div").hidden = !selectedLink || !!linking;
     elementByPath("picker", "div").hidden = !linking;
 
-    elementByPath("selection/link", "button").hidden = selectedCards.size > 1;
-    elementByPath("selection/group", "button").hidden = selectedCards.size === 1;
-
-    //elementByPath("selection/copy-id", "div").hidden = selectedCards.size > 1;
-    //elementByPath("selection/edit", "div").hidden = selectedCards.size > 1;
+    if (selection) switchTab("sidebar/selection/cards");
+    else if (selectedGroup) switchTab("sidebar/selection/group");
+    else if (selectedLink) switchTab("sidebar/selection/link");
+    else switchTab("sidebar/selection/none");
 
     // selections
     const active = selectedGroups.length > 0 ? new Set(getGroupCards(selectedGroups[0])) : selectedCards;
@@ -153,6 +149,7 @@ function deselectCards() {
     selectedCards.clear();
 
     updateToolbar();
+    cardEditor.close();
 }
 
 function deselectGroup() {
@@ -235,6 +232,8 @@ function selectCard(card) {
     updateToolbar();
 
     editSelected();
+
+    cardEditor.openMany(Array.from(selectedCards));
 }
 
 function deselectCard(card) {
@@ -242,6 +241,7 @@ function deselectCard(card) {
     boardView.cardToView.get(card).setSelected(false);
 
     updateToolbar();
+    cardEditor.openMany(Array.from(selectedCards));
 }
 
 function beginLink() {

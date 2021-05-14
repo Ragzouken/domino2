@@ -1,29 +1,33 @@
 .sidebar-header
-    div 3 cards selected
+    div(data-path="selection/prompt") 3 cards selected
     .button-row
         button(data-action="selection/cancel") deselect
         button(data-action="selection/link" data-path="selection/link" ) link
         button(data-action="selection/group" data-path="selection/group" ) group
         button(data-action="selection/delete") delete
 .sidebar-panel
-    h2 text
-    .button-row
-        button(data-action="card-editor/text/bold") bold
-        button(data-action="card-editor/text/italic") italic
-        button(data-action="card-editor/text/strike") strike
-        button(data-action="card-editor/text/header") header
-    textarea(data-path="card-editor/text" spellcheck="true")
-    h2 icons
-    #card-editor-icons
-        each row in [1, 2, 3, 4]
-            input(data-path=`card-editor/icons/${row}/icon` type="text").icon-select
-            input(data-path=`card-editor/icons/${row}/action` type="text").icon-action
-    h2 style
-    select(data-path="card-editor/styles" size="3")
-    .button-row
-        button(data-action="card-editor/styles/edit") edit
-    h2 image
-    .button-row
-        button(data-action="card-editor/image/upload") upload image
-        button(data-action="card-editor/image/remove") remove image
-    textarea(data-path="card-editor/image/alt" placeholder="alt text" spellcheck="true")
+    .sidebar-group(data-path="card-editor/text")
+        h2 text
+        .button-row
+            button(data-action="card-editor/text/bold") bold
+            button(data-action="card-editor/text/italic") italic
+            button(data-action="card-editor/text/strike") strike
+            button(data-action="card-editor/text/header") header
+        textarea(data-path="card-editor/text/value" spellcheck="true")
+    .sidebar-group(data-path="card-editor/icons")
+        h2 icons
+        #card-editor-icons
+            each row in [1, 2, 3, 4]
+                input(data-path=`card-editor/icons/${row}/icon` type="text").icon-select
+                input(data-path=`card-editor/icons/${row}/action` type="text").icon-action
+    .sidebar-group(data-path="card-editor/style")
+        h2 style
+        select(data-path="card-editor/styles" size="3")
+        .button-row
+            button(data-action="card-editor/styles/edit") edit
+    .sidebar-group(data-path="card-editor/image")
+        h2 image
+        .button-row
+            button(data-action="card-editor/image/upload") upload image
+            button(data-action="card-editor/image/remove") remove image
+        textarea(data-path="card-editor/image/alt" placeholder="alt text" spellcheck="true")

@@ -286,3 +286,9 @@ body[data-player] #toolbar {
     flex-direction: column;
     gap: 1em;
 }
+
+.sidebar-group {
+    display: flex;
+    flex-direction: column;
+    gap: 1em;
+}

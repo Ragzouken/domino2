@@ -4,7 +4,7 @@
         //button(data-tab-toggle="sidebar/about" data-tab-default) about
         button(data-tab-toggle="sidebar/board") board
         button(data-tab-toggle="sidebar/styles") styles
-        button(data-tab-toggle="sidebar/selection") selection
+        button(data-tab-toggle="sidebar/selection" data-tab-default) selection
     .editor-page(data-tab-body="sidebar/about")
         include:markdown-it(html) /about.md
     .sidebar-page(data-tab-body="sidebar/board")
@@ -12,4 +12,16 @@
     .sidebar-page(data-tab-body="sidebar/styles")
         include /pugs/style-editor.pug
     .sidebar-page(data-tab-body="sidebar/selection")
-        include /pugs/card-editor.pug
+        div(hidden)
+            button(data-tab-toggle="sidebar/selection/none" data-tab-default)
+            button(data-tab-toggle="sidebar/selection/cards")
+            button(data-tab-toggle="sidebar/selection/group")
+            button(data-tab-toggle="sidebar/selection/link")
+        .sidebar-page(data-tab-body="sidebar/selection/none")
+            .sidebar-header nothing selected
+        .sidebar-page(data-tab-body="sidebar/selection/cards")
+            include /pugs/card-editor.pug
+        .sidebar-page(data-tab-body="sidebar/selection/group")
+            include /pugs/group-editor.pug
+        .sidebar-page(data-tab-body="sidebar/selection/link")
+            include /pugs/link-editor.pug
