@@ -193,6 +193,7 @@ textarea {
 
 .button-row > button {
     flex: 1;
+    white-space: nowrap;
 }
 
 .toolbar-group[data-path="global"] {

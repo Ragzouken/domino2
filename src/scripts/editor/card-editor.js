@@ -41,21 +41,6 @@ class CardEditor {
         this.styleList.addEventListener("change", () => this.pushData());
     }
 
-    /** @param {DominoDataCard} card */
-    open(card) {
-        //this.container.hidden = false;
-        this.card = card;
-        this.cards = [];
-
-        refreshDropdown(
-            this.styleList,
-            [{id: "", name: "default"}, ...boardView.projectData.cardStyles],
-            (style) => html("option", { value: style.id }, style.name),
-        );
-
-        //this.pullData();
-    }
-
     /** @param {DominoDataCard[]} cards */
     openMany(cards) {
         this.promptText.textContent = `${cards.length} cards selected`;
@@ -64,8 +49,16 @@ class CardEditor {
         elementByPath("card-editor/icons", "div").hidden = cards.length > 1;
         elementByPath("card-editor/image", "div").hidden = cards.length > 1;
         elementByPath("card-editor/style", "div").hidden = false;
+        elementByPath("selection/link", "button").hidden = cards.length !== 1;
+        elementByPath("selection/group", "button").hidden = cards.length === 1;
         this.cards = cards;
         this.pullData();
+
+        refreshDropdown(
+            this.styleList,
+            [{id: "", name: "default"}, ...boardView.projectData.cardStyles],
+            (style) => html("option", { value: style.id }, style.name),
+        );
     }
 
     close() {

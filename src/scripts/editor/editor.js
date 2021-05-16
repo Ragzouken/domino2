@@ -76,3 +76,56 @@ setActionHandler("project/publish/neocities", async () => {
     //openButton.disabled = false;
     //openButton.onclick = () => window.open(url);
 });
+
+class LinkEditor {
+    constructor() {
+        this.colorInput = elementByPath("link/color", "input");
+        /** @type {DominoDataLink[]} */
+        this.links = [];
+
+        this.colorInput.addEventListener("input", () => {
+            this.links.forEach((link) => {
+                link.color = this.colorInput.value;
+                boardView.linkToView.get(link).regenerateSVG();
+            });
+        });
+    }
+
+    /** @param {DominoDataLink[]} links */
+    openLinks(links) {
+        this.links = links;
+        
+        if (links.length === 1) this.colorInput.value = links[0].color;
+    }
+
+    close() {
+        this.links = [];
+    }
+}
+
+class GroupEditor {
+    constructor() {
+        this.colorInput = elementByPath("group/color", "input");
+        /** @type {DominoDataGroup[]} */
+        this.groups = [];
+
+        this.colorInput.addEventListener("input", () => {
+            this.groups.forEach((group) => {
+                group.color = this.colorInput.value;
+                boardView.groupToView.get(group).regenerateSVG();
+            });
+        });
+    }
+
+    /** @param {DominoDataGroup[]} groups */
+    openGroups(groups) {
+        this.groups = groups;
+        
+        if (groups.length === 1) this.colorInput.value = groups[0].color;
+    }
+
+    close() {
+        this.groups = [];
+    }
+}
+

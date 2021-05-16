@@ -155,7 +155,6 @@ svg.link line.selection-flash {
 
 .button-row button[data-action="global-editor/card-style/new"] {
     flex: 0;
-    white-space: nowrap;
 }
 
 .settings-grid > span {

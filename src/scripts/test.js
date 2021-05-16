@@ -6,6 +6,10 @@ const selectedGroups = [];
 const selectedLinks = [];
 /** @type {DominoDataCard} */
 let linking;
+/** @type {LinkEditor} */
+let linkEditor;
+/** @type {GroupEditor} */
+let groupEditor;
 /** @type {CardEditor} */
 let cardEditor;
 /** @type {DominoBoardView} */
@@ -17,6 +21,8 @@ let cardStyleEditor;
 async function test() {
     boardView = new DominoBoardView();
     cardEditor = new CardEditor();
+    linkEditor = new LinkEditor();
+    groupEditor = new GroupEditor();
     cardStyleEditor = new CardStyleEditor();
 
     listen(scene.viewport, "dblclick", (event) => {
@@ -38,7 +44,6 @@ async function test() {
         insertCard(scene, card);
         deselectAll();
         selectCard(card);
-        editSelected();
     });
 
     setActionHandler("global/home", centerOrigin);
@@ -51,7 +56,6 @@ async function test() {
         const id = Array.from(selectedCards)[0].id;
         navigator.clipboard.writeText('#'+id);
     });
-    setActionHandler("selection/edit", editSelected);
     setActionHandler("selection/group", groupSelection);
     setActionHandler("selection/link", beginLink);
     setActionHandler("selection/cancel", deselectCards);
@@ -60,11 +64,9 @@ async function test() {
         Array.from(selectedCards).forEach((card) => deleteCard(card));
     });
 
-    setActionHandler("group/recolor", recolorGroup);
     setActionHandler("group/delete", deleteSelectedGroup);
     setActionHandler("group/select", selectGroupCards);
 
-    setActionHandler("link/recolor", recolorLink);
     setActionHandler("link/delete", deleteSelectedLink);
     setActionHandler("link/select", selectLinkCards);
 
@@ -156,6 +158,7 @@ function deselectGroup() {
     selectedGroups.forEach((group) => boardView.groupToView.get(group).setHighlight(false));
     selectedGroups.length = 0;
     updateToolbar();
+    groupEditor.close();
 }
 
 function selectGroupCards() {
@@ -173,16 +176,11 @@ function deleteGroup(group) {
     boardView.groupToView.delete(group);
 }
 
-function recolorGroup() {
-    const group = selectedGroups[0];
-    group.color = `rgb(${randomInt(0, 255)} ${randomInt(0, 255)} ${randomInt(0, 255)})`;
-    boardView.groupToView.get(group).regenerateSVG();
-}
-
 function deselectLink() {
     selectedLinks.forEach((link) => boardView.linkToView.get(link).setHighlight(false));
     selectedLinks.length = 0;
     updateToolbar();
+    linkEditor.close();
 }
 
 function selectLinkCards() {
@@ -201,22 +199,8 @@ function deleteLink(link) {
     boardView.linkToView.delete(link);
 }
 
-function recolorLink() {
-    const link = selectedLinks[0];
-    link.color = `rgb(${randomInt(0, 255)} ${randomInt(0, 255)} ${randomInt(0, 255)})`;
-    boardView.linkToView.get(link).regenerateSVG();
-}
-
 function closeEditor() {
     cardEditor.close();
-}
-
-function editSelected() {
-    if (selectedCards.size !== 1) return;
-    const card = Array.from(selectedCards)[0];
-
-    centerSelection();
-    cardEditor.open(card);
 }
 
 function selectCard(card) {
@@ -230,8 +214,6 @@ function selectCard(card) {
     deselectGroup();
     deselectLink();
     updateToolbar();
-
-    editSelected();
 
     cardEditor.openMany(Array.from(selectedCards));
 }
@@ -300,6 +282,8 @@ function selectGroups(groups) {
         
         if (prev === selectedGroups[0]) cycleGroup();
     }
+
+    groupEditor.openGroups([selectedGroups[0]]);
 }
 
 function cycleLink() {
@@ -327,6 +311,8 @@ function selectLinks(links) {
         
         if (prev === selectedLinks[0]) cycleLink();
     }
+
+    linkEditor.openLinks([selectedLinks[0]]);
 }
 
 function centerOrigin() {
@@ -698,7 +684,6 @@ class DominoCardView {
             killEvent(event);
             deselectCards();
             selectCard(this.card);
-            editSelected();
         });
     }
 
