@@ -73,8 +73,10 @@ setActionHandler("project/publish/neocities", async () => {
     popup.postMessage({ name, html }, "https://kool.tools");
     const url = await success;
     popup.close();
-    //openButton.disabled = false;
-    //openButton.onclick = () => window.open(url);
+
+    const viewButton = ONE("#neocities-view");
+    viewButton.disabled = false;
+    viewButton.onclick = () => window.open(url);
 });
 
 class LinkEditor {

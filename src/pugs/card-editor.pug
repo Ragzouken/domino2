@@ -1,7 +1,9 @@
 .sidebar-header
-    div(data-path="selection/prompt") 3 cards selected
+    div
+        span(data-path="selection/prompt") 3 cards selected
     .button-row
         button(data-action="selection/cancel") deselect
+        button(data-action="selection/copy-id") copy id
         button(data-action="selection/link" data-path="selection/link" ) link
         button(data-action="selection/group" data-path="selection/group" ) group
         button(data-action="selection/delete") delete

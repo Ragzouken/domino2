@@ -4,7 +4,7 @@ class CardEditor {
         this.cards = [];
         
         //this.container = elementByPath("card-editor", "div");
-        this.promptText = elementByPath("selection/prompt", "div");
+        this.promptText = elementByPath("selection/prompt", "span");
 
         this.textInput = elementByPath("card-editor/text/value", "textarea");
         this.altTextInput = elementByPath("card-editor/image/alt", "textarea");
@@ -18,12 +18,12 @@ class CardEditor {
 
         setActionHandler("card-editor/image/upload", async () => {
             const [file] = await pickFiles("image/*");
-            this.card.image = await fileToCompressedImageURL(file);
+            this.cards[0].image = await fileToCompressedImageURL(file);
             this.pushData();
         });
 
         setActionHandler("card-editor/image/remove", () => {
-            this.card.image = undefined;
+            this.cards[0].image = undefined;
             this.pushData();
         });
 

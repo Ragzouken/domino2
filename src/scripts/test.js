@@ -44,6 +44,8 @@ async function test() {
         insertCard(scene, card);
         deselectAll();
         selectCard(card);
+        invokeAction("global-editor/open");
+        switchTab("sidebar/selection");
     });
 
     setActionHandler("global/home", centerOrigin);
@@ -53,8 +55,8 @@ async function test() {
     setActionHandler("project/clear-cards", () => Array.from(boardView.projectData.cards).forEach(deleteCard));
 
     setActionHandler("selection/copy-id", () => {
-        const id = Array.from(selectedCards)[0].id;
-        navigator.clipboard.writeText('#'+id);
+        const ids = Array.from(selectedCards).map((card) => card.id);
+        navigator.clipboard.writeText('#' + ids.join(","));
     });
     setActionHandler("selection/group", groupSelection);
     setActionHandler("selection/link", beginLink);
@@ -267,6 +269,8 @@ function cycleGroup() {
 
 /** @param {DominoDataGroup[]} groups */
 function selectGroups(groups) {
+    if (selectedGroups.length === 0) switchTab("sidebar/selection");
+
     const combined = new Set([...groups, ...selectedGroups]);
     const same = combined.size === selectedGroups.length && combined.size === groups.length;
 
@@ -296,6 +300,8 @@ function cycleLink() {
 
 /** @param {DominoDataLink[]} links */
 function selectLinks(links) {
+    if (selectedLinks.length === 0) switchTab("sidebar/selection");
+
     const combined = new Set([...links, ...selectedLinks]);
     const same = combined.size === selectedLinks.length && combined.size === links.length;
 
@@ -499,12 +505,12 @@ function getCardFromId(cardId) {
 
 function runCardAction(action) {
     if (action.startsWith('#')) {
-        const id = action.slice(1);
-        const card = boardView.projectData.cards.find((card) => card.id === id);
+        const ids = action.slice(1).split(",");
+        const cards = getCardsByIds(ids);
         
-        if (card) {
-            window.location.replace('#' + id);
-            centerCards([card]);
+        if (cards.length > 0) {
+            window.location.replace('#' + ids.join(","));
+            centerCards(cards);
         }
     } else if (action.startsWith('open:')) {
         window.open(action.slice(5));
@@ -684,6 +690,9 @@ class DominoCardView {
             killEvent(event);
             deselectCards();
             selectCard(this.card);
+
+            invokeAction("global-editor/open");
+            switchTab("sidebar/selection");
         });
     }
 

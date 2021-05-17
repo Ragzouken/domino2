@@ -276,3 +276,10 @@ svg.link line.selection-flash {
 /* don't respond to blank card icons */
 .card-icon-bar > *.blank { pointer-events: none; transform: unset; }
 
+
+#sidebar-toggle {
+    position: absolute;
+    left: 0; bottom: 0;
+    font-size: 1.5em;
+    padding: 1em;
+}
