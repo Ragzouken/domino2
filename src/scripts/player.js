@@ -152,6 +152,7 @@ class PanningScene {
                 origin.x, origin.y, origin.z,
             );
 
+            ratio *= deltaScale;
             this.refresh();
         });
 
