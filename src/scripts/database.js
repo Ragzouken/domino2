@@ -39,7 +39,9 @@ async function projectsStores(mode) {
     return { transaction, projects, meta };
 }
 
-
+/**
+ * @returns {Promise<DominoDataSaveMetadata[]>}
+ */
 async function listProjects() {
     const stores = await projectsStores("readonly");
     return promisfyRequest(stores.meta.getAll());
@@ -50,9 +52,16 @@ async function listProjects() {
  * @returns {Promise}
  */
 async function saveProject(projectData, key) {
+    /** @type {DominoDataSaveMetadata} */
+    const meta = {
+        id: projectData.details.id,
+        title: projectData.details.title,
+        date: (new Date()).toISOString(),
+    }
+
     const stores = await projectsStores("readwrite");
     stores.projects.put(projectData, key);
-    stores.meta.put(projectData.details, key);
+    stores.meta.put(meta, key);
     return promisfyTransaction(stores.transaction);
 }
 
@@ -63,4 +72,14 @@ async function saveProject(projectData, key) {
 async function loadProject(key) {
     const stores = await projectsStores("readonly");
     return promisfyRequest(stores.projects.get(key));
+}
+
+/**
+ * @param {string} key
+ */
+ async function deleteProject(key) {
+    const stores = await projectsStores("readwrite");
+    stores.projects.delete(key);
+    stores.meta.delete(key);
+    return promisfyTransaction(stores.transaction);
 }

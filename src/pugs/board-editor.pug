@@ -1,15 +1,28 @@
-.sidebar-header browser saves disabled for now
+.sidebar-header
+    details
+        summary 
+            h2 switch board
+        .sidebar-group
+            div
+            .button-row
+                button(data-action="global/new") new board
+                button(data-action="global/import") import board
+            select(size="12" data-path="global/saves")
+            .button-row
+                button(data-action="global/saves/load") load
+                button(data-action="global/saves/duplicate") duplicate
+                button(data-action="global/saves/delete") delete
 .sidebar-panel
     h2 title
     .button-row
         input(type="text" data-path="global-editor/title")
+    h2 initial card focus
+    p copy the id of a card selection and paste it here to set where the viewer starts in the board
+    .button-row
+        input(type="text" data-path="global-editor/focus")
     h2 background color
     .button-row
         input(type="color" data-path="global-editor/style/background-color")
-    h2 overwrite
-    .button-column
-        button(data-action="project/import" title="import from previous export") 📂 import from html
-        button(data-action="project/clear-cards" title="delete all cards from the board") ❌ remove all cards
     h2 publish
     .button-column
         button(data-action="project/export/html" title="export to standalone webpage") 📦 export to html

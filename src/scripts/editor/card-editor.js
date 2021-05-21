@@ -56,7 +56,7 @@ class CardEditor {
 
         refreshDropdown(
             this.styleList,
-            [{id: "", name: "default"}, ...boardView.projectData.cardStyles],
+            [{id: "default", name: "default"}, ...boardView.projectData.cardStyles],
             (style) => html("option", { value: style.id }, style.name),
         );
     }

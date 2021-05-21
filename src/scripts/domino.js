@@ -48,6 +48,14 @@
  * @property {string} id
  * @property {string} name
  * @property {string} title
+ * @property {string} focus
+ */
+
+/**
+ * @typedef {Object} DominoDataSaveMetadata
+ * @property {string} id
+ * @property {string} title
+ * @property {string} date
  */
 
 /**

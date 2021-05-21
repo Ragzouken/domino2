@@ -13,7 +13,6 @@ html
         style#editor-style
             include styles/editor-style.css
         style#card-styles
-        // third party libraries
         // scripts
         script(id="database.js")
             include scripts/database.js
@@ -46,7 +45,7 @@ html
             .toolbar-group.icon-bar
                 //.icon.disabled(data-action="global/undo" title="undo") ↩
                 //.icon.disabled(data-action="global/redo" title="redo") ↪
-                //.icon(data-action="project/save" title="save in browser") 💾
+                .icon(data-action="project/save" title="save in browser") 💾
 
             .toolbar-group.icon-bar(data-path="picker" hidden)
                 span click a card to link to

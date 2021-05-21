@@ -79,8 +79,7 @@ body {
 /* main toolbar */
 #toolbar {
     position: absolute;
-    left: 50%; bottom: 0;
-    transform: translate(-50%, 0);
+    right: 0; bottom: 0;
     
     font-size: 1.5em;
     padding: .5em;

@@ -16,6 +16,7 @@ function createStandalonePlayer(projectData) {
     ONE("title", clone).innerHTML = projectData.details.name;
     ONE("#project-data", clone).innerHTML = JSON.stringify(projectData);
     ONE('[data-path="global-editor"]', clone).hidden = true;
+    ONE('#sidebar-toggle', clone).hidden = true;
     return clone;
 }
 
@@ -30,15 +31,75 @@ setActionHandler("project/export/html", async () => {
     saveAs(blob, name);
 });
 
-setActionHandler("project/import", async () => {
+setActionHandler("global/import", async () => {
     const [file] = await pickFiles("text/html");
     const text = await textFromFile(file);
     const html = await htmlFromText(text);
 
     const json = ONE("#project-data", html).innerHTML;
     const projectData = JSON.parse(json);
+    projectData.details.id = nanoid();
     boardView.loadProject(projectData);
 });
+
+setActionHandler("global/new", async () => {
+    /** @type {DominoDataProject} */
+    const blank = {
+        details: {
+            id: nanoid(),
+            title: "new project",
+            name: "project",
+            focus: "",
+        },
+        cards: [],
+        groups: [],
+        links: [],
+        cardStyles: COPY(boardView.projectData.cardStyles),
+        boardStyle: COPY(boardView.projectData.boardStyle), 
+    }
+
+    boardView.loadProject(blank);
+});
+
+async function refreshSaves() {
+    const saves = await listProjects();
+    saves.sort((a, b) => (new Date(b.date)).getTime() - (new Date(a.date)).getTime());
+
+    const options = saves.map(({ title, date, id }) => {
+        const date_ = new Date(date).toLocaleDateString();
+        const label = `${title} (${date_})`;
+        return html("option", { value: id }, label);
+    });
+    elementByPath("global/saves", "select").replaceChildren(...options);
+}
+
+setActionHandler("project/save", async () => {
+    await saveProject(boardView.projectData, boardView.projectData.details.id);
+    refreshSaves();
+});
+
+setActionHandler("global/saves/load", async () => {
+    const id = elementByPath("global/saves", "select").value;
+    const project = await loadProject(id);
+    boardView.loadProject(project);
+});
+
+setActionHandler("global/saves/duplicate", async () => {
+    const id = elementByPath("global/saves", "select").value;
+    const project = COPY(await loadProject(id));
+    project.details.id = nanoid();
+    project.details.title += " (copy)";
+    await saveProject(project, project.details.id);
+    refreshSaves();
+});
+
+setActionHandler("global/saves/delete", async () => {
+    const id = elementByPath("global/saves", "select").value;
+    await deleteProject(id);
+    refreshSaves();
+});
+
+setActionHandler("show:sidebar/board", refreshSaves);
 
 setActionHandler("project/publish/neocities", async () => {
     const ready = new Promise((resolve, reject) => {

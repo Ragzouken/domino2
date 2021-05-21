@@ -26,6 +26,8 @@ async function test() {
     cardStyleEditor = new CardStyleEditor();
 
     listen(scene.viewport, "dblclick", (event) => {
+        if (!boardView.editable) return;
+
         killEvent(event);    
         const transform = scene.mouseEventToSceneTransform(event);
         transform.e -= cellWidth/2;
@@ -50,7 +52,6 @@ async function test() {
 
     setActionHandler("global/home", centerOrigin);
     
-    setActionHandler("project/save", () => saveProject(boardView.projectData, "save"));
     setActionHandler("project/reset", () => boardView.loadProject(JSON.parse(ONE("#project-data").innerHTML)));
     setActionHandler("project/clear-cards", () => Array.from(boardView.projectData.cards).forEach(deleteCard));
 

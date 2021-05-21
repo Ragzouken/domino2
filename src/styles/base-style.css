@@ -27,7 +27,7 @@
 button, select, option, input { font-family: inherit; font-size: inherit; }
 
 /* clickable things should use this cursor imo */
-button, a { cursor: pointer; }
+button, a, details summary { cursor: pointer; }
 
 /* crisp pixelart */
 canvas, img {
@@ -35,4 +35,9 @@ canvas, img {
     image-rendering: -webkit-crisp-edges;
     image-rendering: pixelated;
     image-rendering: crisp-edges;
+}
+
+/* nicer details */
+details summary > * {
+    display: inline;
 }

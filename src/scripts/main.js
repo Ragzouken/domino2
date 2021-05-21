@@ -15,12 +15,13 @@ async function start() {
     const dataElement = ONE("#project-data");
     const player = ONE("body").getAttribute("data-player") === "true";
 
-    const save = undefined;//await loadProject("save");
-    const data = (player || !save) ? JSON.parse(dataElement.innerHTML) : save;
+    /** @type {DominoDataProject} */
+    const data = JSON.parse(dataElement.innerHTML);
 
     await test();
+    data.details.id = nanoid();
     boardView.loadProject(data);
-    scene.frameRect({ x: 800, y: 400, width: 64, height: 64 }, .25, 1);
+    if (data.details.focus) centerCards(getCardsByIds(data.details.focus.slice(1).split(",")));
 
     console.log("player", player);
     if (player) {

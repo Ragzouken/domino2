@@ -169,6 +169,7 @@ class CardStyleEditor {
         const container = document.getElementById("card-style-fields");
 
         this.titleInput = elementByPath("global-editor/title", "input");
+        this.focusInput = elementByPath("global-editor/focus", "input");
         this.backgroundColorInput = elementByPath("global-editor/style/background-color", "input");
 
         this.nameInput = elementByPath("global-editor/card-styles/selected/name", "input");
@@ -199,6 +200,10 @@ class CardStyleEditor {
         this.backgroundColorInput.addEventListener("input", () => {
             boardView.projectData.boardStyle["background-color"] = this.backgroundColorInput.value;
             refreshBoardStyle();
+        });
+
+        this.focusInput.addEventListener("input", () => {
+            boardView.projectData.details.focus = this.focusInput.value;
         });
 
         this.nameInput.addEventListener("input", () => {
@@ -263,6 +268,7 @@ class CardStyleEditor {
 
     pullData() {
         this.titleInput.value = boardView.projectData.details.title;
+        this.focusInput.value = boardView.projectData.details.focus;
         this.backgroundColorInput.value = boardView.projectData.boardStyle["background-color"] || "#b7b8b0";
 
         refreshDropdown(

@@ -27,6 +27,13 @@ const ONE = (query, element = undefined) => (element || document).querySelector(
  */
 const ALL = (query, element = undefined) => Array.from((element || document).querySelectorAll(query));
 
+/**
+ * @template T
+ * @param {T} object
+ * @returns {T}
+ */
+const COPY = (object) => JSON.parse(JSON.stringify(object));
+
 // async equivalent of Function constructor
 const AsyncFunction = Object.getPrototypeOf(async function(){}).constructor
 
