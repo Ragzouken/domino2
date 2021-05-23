@@ -82,6 +82,26 @@ async function test() {
     
     // image pasting
     window.addEventListener("paste", (event) => cardEditor.paste(event));
+
+    // hotkeys
+    document.addEventListener("keydown", (event) => {
+        const targetTag = event.target.tagName.toLowerCase();
+        const textedit = targetTag === "input" || targetTag === "textarea";
+
+        if (event.ctrlKey && event.key === "s") {
+            invokeAction("project/save");
+        } else if (!textedit && event.key === "Escape") {
+            deselectAll();
+        } else if (!textedit && event.key === "Delete") {
+            if (selectedCards.size > 0) invokeAction("selection/delete");
+            if (selectedGroups.length > 0) invokeAction("group/delete");
+            if (selectedLinks.length > 0) invokeAction("link/delete");
+        } else {
+            return;
+        }
+
+        killEvent(event);
+    });
 }
 
 /** @param {DominoDataGroup} group */
@@ -147,6 +167,7 @@ function deleteCard(card) {
 function deselectAll() {
     deselectCards();
     deselectGroup();
+    deselectLink();
     updateToolbar();
 }
 
