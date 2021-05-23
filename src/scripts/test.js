@@ -782,7 +782,13 @@ class DominoCardView {
         this.card.icons.forEach((data, i) => {
             const element = this.iconElements[i];
             element.innerHTML = data.icon;
-            element.href = data.action;
+            
+            if (data.action === "") {
+                element.removeAttribute("href");
+            } else {
+                element.href = data.action;
+            }
+
             element.classList.toggle('blank', data.icon === '');
             element.classList.toggle('cosmetic', data.action === '');
         });
