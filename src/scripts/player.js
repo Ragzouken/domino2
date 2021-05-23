@@ -205,7 +205,7 @@ function parseFakedown(text) {
     if (text.startsWith('`'))
         return `<pre>${text.slice(1)}</pre>`;
     text = text.replace(/([^-])--([^-])/g, '$1—$2');
-    text = fakedownToTag(text, '##', 'h3');
+    text = fakedownToTag(text, '##\n?', 'h3');
     text = fakedownToTag(text, '~~', 's');
     text = fakedownToTag(text, '__', 'strong');
     text = fakedownToTag(text, '\\*\\*', 'strong');

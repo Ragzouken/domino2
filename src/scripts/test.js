@@ -122,6 +122,7 @@ function insertCard(scene, card) {
     const view = new DominoCardView(scene);
     view.setCard(card);
     boardView.cardToView.set(card, view);
+    return view;
 }
 
 /** @param {DominoDataCard} card */
@@ -427,11 +428,11 @@ function cardStyleToCss(style) {
     if (style.properties["text-center"]) declarations.push("--text-align: center;");
 
     const rules = [
-        `.${style.id} { ${declarations.join(" ")} }`,
+        `.style-${style.id} { ${declarations.join(" ")} }`,
     ];
 
     if (style.properties["icon-hide-empty"]) {
-        rules.push(`.${style.id} .blank { display: none; }`);
+        rules.push(`.style-${style.id} .blank { display: none; }`);
     }
 
     // custom css prefix
@@ -446,9 +447,9 @@ function cardStyleToCss(style) {
                 const selectors = rule.selectorText.split(",");
                 const prefixed = selectors.map((selector) => {
                     if (selector.startsWith(".card-root")) {
-                        return `.${style.id}${selector}`;
+                        return `.style-${style.id}${selector}`;
                     } else {
-                        return `.${style.id} ${selector}`;
+                        return `.style-${style.id} ${selector}`;
                     }
                 }).join(",");
                 rule.selectorText = prefixed;
@@ -532,7 +533,7 @@ class DominoLinkView {
 
         svgToLink.set(this.root, this.link);
         this.root.addEventListener("pointerdown", (event) => {
-            if (!boardView.editable) return;
+            if (!boardView.editable || event.button !== 0) return;
             killEvent(event);
             dragLinks(event);
         });
@@ -597,7 +598,7 @@ class DominoGroupView {
         background.appendChild(this.root);
         svgToGroup.set(this.root, this.group);
         this.root.addEventListener("pointerdown", (event) => {
-            if (!boardView.editable) return;
+            if (!boardView.editable || event.button !== 0) return;
             killEvent(event);
             dragGroups(event);
         });
@@ -642,6 +643,16 @@ class DominoGroupView {
     }
 }
 
+/** 
+ * @param {DominoDataCard} card 
+ */
+function duplicateCard(card) {
+    const copy = COPY(card);
+    copy.id = nanoid();
+    insertCard(scene, copy);
+    return copy;
+}
+
 class DominoCardView {
     /**
      * @param {PanningScene} scene 
@@ -664,36 +675,47 @@ class DominoCardView {
         ONE("#cards").appendChild(this.rootElement);
 
         listen(resize.children[0], "pointerdown", (event) => {
+            if (!boardView.editable || event.button !== 0) return;
             killEvent(event);
             this.startResize(event);
         });
 
         listen(this.rootElement, "pointerdown", (event) => {
-            if (!boardView.editable) return;
+            if (!boardView.editable || event.button !== 0) return;
             killEvent(event);
 
-            let drags;
+            const duplicate = event.ctrlKey === true;
+            const selected = selectedCards.has(this.card);
+            const targets = selected ? Array.from(selectedCards) : [this.card];
+            const drags = [];
 
-            if (selectedCards.has(this.card)) {
-                drags = Array.from(selectedCards).map((card) => boardView.cardToView.get(card).startDrag(event));
+            if (duplicate) {
+                const copies = targets.map(duplicateCard);
+                if (selected) {
+                    deselectAll();
+                    copies.forEach(selectCard);
+                }
+                drags.push(...copies.map((card) => boardView.cardToView.get(card).startDrag(event)));
+                drags[0].on("click", (event) => copies.map(deleteCard));
             } else {
-                //if (!event.shiftKey) deselectCards();
-                drags = [this.startDrag(event)];
+                drags.push(...targets.map((card) => boardView.cardToView.get(card).startDrag(event)));
             }
 
-            drags[0].on("click", (event) => {
-                selectCardToggle(this.card);
-            })
+            drags[0].on("click", (event) => selectCardToggle(this.card));
         });
 
         listen(this.rootElement, "dblclick", (event) => {
-            if (!boardView.editable) return;
             killEvent(event);
-            deselectCards();
-            selectCard(this.card);
 
-            invokeAction("global-editor/open");
-            switchTab("sidebar/selection");
+            if (!boardView.editable) {
+                centerCards([this.card]);
+            } else {
+                deselectCards();
+                selectCard(this.card);
+    
+                invokeAction("global-editor/open");
+                switchTab("sidebar/selection");
+            }
         });
     }
 
@@ -733,7 +755,7 @@ class DominoCardView {
         const bounds = boundCard(this.card);
         this.rootElement.style.width = `${bounds.width}px`;
         this.rootElement.style.height = `${bounds.height}px`;
-        this.rootElement.setAttribute("class", "card-root " + this.card.style ?? "");
+        this.rootElement.setAttribute("class", "card-root " + "style-" + this.card.style ?? "");
         this.setSelected(selectedCards.has(this.card));
 
         this.card.icons.forEach((data, i) => {
