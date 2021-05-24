@@ -14,11 +14,14 @@ let groupEditor;
 let cardEditor;
 /** @type {DominoBoardView} */
 let boardView;
+/** @type {DominoProjectManager} */
+let dataManager;
 
 /** @type {CardStyleEditor} */
 let cardStyleEditor;
 
 async function test() {
+    dataManager = new DominoProjectManager();
     boardView = new DominoBoardView();
     cardEditor = new CardEditor();
     linkEditor = new LinkEditor();
@@ -43,6 +46,7 @@ async function test() {
             icons: [],
         }
 
+        dataManager.checkpoint();
         insertCard(scene, card);
         deselectAll();
         selectCard(card);
@@ -50,10 +54,10 @@ async function test() {
         switchTab("sidebar/selection");
     });
 
-    setActionHandler("global/home", centerOrigin);
-    
-    setActionHandler("project/reset", () => boardView.loadProject(JSON.parse(ONE("#project-data").innerHTML)));
-    setActionHandler("project/clear-cards", () => Array.from(boardView.projectData.cards).forEach(deleteCard));
+    setActionHandler("global/undo", () => dataManager.undo());
+    setActionHandler("global/redo", () => dataManager.redo());
+
+    setActionHandler("project/reset", () => dataManager.reset(JSON.parse(ONE("#project-data").innerHTML)));
 
     setActionHandler("selection/copy-id", () => {
         const ids = Array.from(selectedCards).map((card) => card.id);
@@ -64,6 +68,7 @@ async function test() {
     setActionHandler("selection/cancel", deselectCards);
     setActionHandler("selection/center", centerSelection);
     setActionHandler("selection/delete", () => {
+        dataManager.checkpoint();
         Array.from(selectedCards).forEach((card) => deleteCard(card));
     });
 
@@ -96,6 +101,10 @@ async function test() {
             if (selectedCards.size > 0) invokeAction("selection/delete");
             if (selectedGroups.length > 0) invokeAction("group/delete");
             if (selectedLinks.length > 0) invokeAction("link/delete");
+        } else if (!textedit && event.ctrlKey && event.key == "z") {
+            dataManager.undo();
+        } else if (!textedit && event.ctrlKey && event.key == "y") {
+            dataManager.redo();
         } else {
             return;
         }
@@ -131,6 +140,9 @@ function updateToolbar() {
     // selections
     const active = selectedGroups.length > 0 ? new Set(getGroupCards(selectedGroups[0])) : selectedCards;
     boardView.cardToView.forEach((view, card) => view.setSelected(active.has(card)));
+
+    ONE("#undo").classList.toggle("disabled", !dataManager.canUndo);
+    ONE("#redo").classList.toggle("disabled", !dataManager.canRedo);
 }
 
 /** 
@@ -214,6 +226,7 @@ function selectLinkCards() {
 }
 
 function deleteSelectedLink() {
+    dataManager.checkpoint();
     deleteLink(selectedLinks.shift());
     deselectLink();
 }
@@ -261,6 +274,7 @@ function beginLink() {
 function selectCardToggle(card) {
     if (linking) {
         const link = { cardA: linking.id, cardB: card.id, color: 'black' };
+        dataManager.checkpoint();
         boardView.projectData.links.push(link);
         linking = undefined;
         refreshLink(link);
@@ -344,14 +358,6 @@ function selectLinks(links) {
     linkEditor.openLinks([selectedLinks[0]]);
 }
 
-function centerOrigin() {
-    scene.locked = true;
-    animateElementTransform(scene.container, .2).then(() => scene.locked = false);
-    const rect = new DOMRect(-cellWidth*2, -cellHeight*2, cellWidth*4, cellHeight*4)
-    padRect(rect, 64);
-    scene.frameRect(rect);
-}
-
 function centerSelection() {
     centerCards(Array.from(selectedCards));
 }
@@ -367,6 +373,7 @@ function centerCards(cards) {
 }
 
 function groupSelection() {
+    dataManager.checkpoint();
     const cards = Array.from(selectedCards).map((card) => card.id);
     const color = `rgb(${randomInt(0, 255)} ${randomInt(0, 255)} ${randomInt(0, 255)})`;
     const group = { cards, color };
@@ -381,6 +388,7 @@ const svgToGroup = new Map();
 const svgToLink = new Map();
 
 function dragGroups(event) {
+    dataManager.checkpoint();
     const overlapping = document.elementsFromPoint(event.clientX, event.clientY);
     const svgs = overlapping.map((overlap) => overlap.closest("svg")).filter((svg) => svg !== null);
     const groups = new Set(svgs.map((svg) => svgToGroup.get(svg)).filter((group) => group !== undefined));
@@ -394,6 +402,7 @@ function dragGroups(event) {
 }
 
 function dragLinks(event) {
+    dataManager.checkpoint();
     const overlapping = document.elementsFromPoint(event.clientX, event.clientY);
     const svgs = overlapping.map((overlap) => overlap.closest("svg")).filter((svg) => svg !== null);
     const links = new Set(svgs.map((svg) => svgToLink.get(svg)).filter((link) => link !== undefined));
@@ -711,6 +720,7 @@ class DominoCardView {
             const drags = [];
 
             if (duplicate) {
+                dataManager.checkpoint();
                 const copies = targets.map(duplicateCard);
                 if (selected) {
                     deselectAll();
@@ -719,6 +729,7 @@ class DominoCardView {
                 drags.push(...copies.map((card) => boardView.cardToView.get(card).startDrag(event)));
                 drags[0].on("click", (event) => copies.map(deleteCard));
             } else {
+                dataManager.checkpoint();
                 drags.push(...targets.map((card) => boardView.cardToView.get(card).startDrag(event)));
             }
 
@@ -1082,4 +1093,60 @@ function stringToDocument(string) {
 
 function stringToElement(string) {
     return stringToDocument(string).children[0];
+}
+
+class DominoProjectManager {
+    get data() {
+        return this.history[this.index];
+    }
+
+    get canUndo() {
+        return this.index > 0;
+    }
+
+    get canRedo() {
+        return this.index < this.history.length - 1;
+    }
+
+    constructor() {
+        /** @type {DominoDataProject[]} */
+        this.history = [];
+        this.index = -1;
+    }
+
+    /**
+     * @param {DominoDataProject} data 
+     */
+    reset(data) {
+        deselectAll();
+
+        this.history.length = 0;
+        this.history.push(data);
+        this.index = 0;
+        boardView.loadProject(this.data);
+    }
+
+    checkpoint() {
+        this.history.length = this.index + 1;
+        const active = this.data;
+        this.history[this.index] = COPY(active);
+        this.history.push(active);
+        this.index += 1;
+
+        updateToolbar();
+    }
+
+    undo() {
+        if (!this.canUndo) return;
+        this.index -= 1;
+        deselectAll();
+        boardView.loadProject(this.data);
+    }
+
+    redo() {
+        if (!this.canRedo) return;
+        this.index += 1;
+        deselectAll();
+        boardView.loadProject(this.data);
+    }
 }

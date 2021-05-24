@@ -39,7 +39,7 @@ setActionHandler("global/import", async () => {
     const json = ONE("#project-data", html).innerHTML;
     const projectData = JSON.parse(json);
     projectData.details.id = nanoid();
-    boardView.loadProject(projectData);
+    dataManager.reset(projectData);
 });
 
 setActionHandler("global/new", async () => {
@@ -58,7 +58,7 @@ setActionHandler("global/new", async () => {
         boardStyle: COPY(boardView.projectData.boardStyle), 
     }
 
-    boardView.loadProject(blank);
+    dataManager.reset(blank);
 });
 
 async function refreshSaves() {
@@ -81,7 +81,7 @@ setActionHandler("project/save", async () => {
 setActionHandler("global/saves/load", async () => {
     const id = elementByPath("global/saves", "select").value;
     const project = await loadProject(id);
-    boardView.loadProject(project);
+    dataManager.reset(project);
 });
 
 setActionHandler("global/saves/duplicate", async () => {

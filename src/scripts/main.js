@@ -20,7 +20,7 @@ async function start() {
 
     await test();
     data.details.id = nanoid();
-    boardView.loadProject(data);
+    dataManager.reset(data);
     if (data.details.focus) centerCards(getCardsByIds(data.details.focus.slice(1).split(",")));
 
     console.log("player", player);

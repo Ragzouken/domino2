@@ -234,6 +234,7 @@ class CardStyleEditor {
         setActionHandler("global-editor/toggle", () => this.toggle());
 
         setActionHandler("global-editor/card-style/new", () => {
+            dataManager.checkpoint();
             const style = {
                 id: nanoid(),
                 name: "new style",
@@ -245,6 +246,7 @@ class CardStyleEditor {
         });
 
         setActionHandler("global-editor/card-style/selected/duplicate", () => {
+            dataManager.checkpoint();
             const style = this.getSelectedStyle();
             const copy = JSON.parse(JSON.stringify(style));
             copy.id = nanoid();
@@ -255,6 +257,7 @@ class CardStyleEditor {
 
         setActionHandler("global-editor/card-style/selected/delete", () => {
             if (boardView.projectData.cardStyles.length <= 1) return;
+            dataManager.checkpoint();
             const style = this.getSelectedStyle();
             deleteCardStyle(style);
             this.setSelectedStyle(boardView.projectData.cardStyles[0].id);

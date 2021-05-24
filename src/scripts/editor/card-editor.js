@@ -18,11 +18,15 @@ class CardEditor {
 
         setActionHandler("card-editor/image/upload", async () => {
             const [file] = await pickFiles("image/*");
+            if (!file) return;
+            dataManager.checkpoint();
             this.cards[0].image = await fileToCompressedImageURL(file);
             this.pushData();
         });
 
         setActionHandler("card-editor/image/remove", () => {
+            if (!this.cards[0].image) return;
+            dataManager.checkpoint();
             this.cards[0].image = undefined;
             this.pushData();
         });
@@ -38,7 +42,10 @@ class CardEditor {
             switchTab("sidebar/styles");
         });
 
-        this.styleList.addEventListener("change", () => this.pushData());
+        this.styleList.addEventListener("change", () => {
+            dataManager.checkpoint();
+            this.pushData();
+        });
     }
 
     /** @param {DominoDataCard[]} cards */
@@ -126,6 +133,7 @@ class CardEditor {
         const image = await dataTransferToImage(event.clipboardData);
 
         if (image) {
+            dataManager.checkpoint();
             card.image = image;
             this.pushData();
             killEvent(event);
