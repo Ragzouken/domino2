@@ -1112,6 +1112,7 @@ class DominoProjectManager {
         /** @type {DominoDataProject[]} */
         this.history = [];
         this.index = -1;
+        this.historyLimit = 20;
     }
 
     /**
@@ -1131,7 +1132,13 @@ class DominoProjectManager {
         const active = this.data;
         this.history[this.index] = COPY(active);
         this.history.push(active);
-        this.index += 1;
+        
+        if (this.index < this.historyLimit) {
+            this.index += 1;
+        } else {
+            // delete earliest history
+            this.history.splice(0, 1);
+        }
 
         updateToolbar();
     }
