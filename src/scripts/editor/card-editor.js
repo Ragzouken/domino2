@@ -14,19 +14,22 @@ class CardEditor {
         this.iconActionInputs = /** @type {HTMLInputElement[]} */ ([1, 2, 3, 4].map((i) => elementByPath(`card-editor/icons/${i}/action`, "input")));
 
         const inputs = [this.textInput, ...this.iconIconInputs, ...this.iconActionInputs, this.altTextInput];
-        inputs.forEach((input) => input.addEventListener("input", () => this.pushData()));
+        inputs.forEach((input) => input.addEventListener("input", () => {
+            dataManager.markDirty();
+            this.pushData();
+        }));
 
         setActionHandler("card-editor/image/upload", async () => {
             const [file] = await pickFiles("image/*");
             if (!file) return;
-            dataManager.checkpoint();
+            dataManager.makeCheckpoint();
             this.cards[0].image = await fileToCompressedImageURL(file);
             this.pushData();
         });
 
         setActionHandler("card-editor/image/remove", () => {
             if (!this.cards[0].image) return;
-            dataManager.checkpoint();
+            dataManager.makeCheckpoint();
             this.cards[0].image = undefined;
             this.pushData();
         });
@@ -43,7 +46,7 @@ class CardEditor {
         });
 
         this.styleList.addEventListener("change", () => {
-            dataManager.checkpoint();
+            dataManager.makeCheckpoint();
             this.pushData();
         });
     }
@@ -133,7 +136,7 @@ class CardEditor {
         const image = await dataTransferToImage(event.clipboardData);
 
         if (image) {
-            dataManager.checkpoint();
+            dataManager.makeCheckpoint();
             card.image = image;
             this.pushData();
             killEvent(event);
@@ -145,6 +148,7 @@ class CardEditor {
      * @param {string} suffix
      */
     wrapSelectedText(prefix, suffix) {
+        dataManager.markDirty();
         const start = this.textInput.selectionStart;
         const end = this.textInput.selectionEnd;
         const text = this.textInput.value.substring(start, end);

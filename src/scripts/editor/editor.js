@@ -147,6 +147,7 @@ class LinkEditor {
         this.links = [];
 
         this.colorInput.addEventListener("input", () => {
+            dataManager.markDirty();
             this.links.forEach((link) => {
                 link.color = this.colorInput.value;
                 boardView.linkToView.get(link).regenerateSVG();
@@ -173,6 +174,7 @@ class GroupEditor {
         this.groups = [];
 
         this.colorInput.addEventListener("input", () => {
+            dataManager.markDirty();
             this.groups.forEach((group) => {
                 group.color = this.colorInput.value;
                 boardView.groupToView.get(group).regenerateSVG();

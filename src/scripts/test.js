@@ -46,7 +46,7 @@ async function test() {
             icons: [],
         }
 
-        dataManager.checkpoint();
+        dataManager.makeCheckpoint();
         insertCard(scene, card);
         deselectAll();
         selectCard(card);
@@ -68,7 +68,7 @@ async function test() {
     setActionHandler("selection/cancel", deselectCards);
     setActionHandler("selection/center", centerSelection);
     setActionHandler("selection/delete", () => {
-        dataManager.checkpoint();
+        dataManager.makeCheckpoint();
         Array.from(selectedCards).forEach((card) => deleteCard(card));
     });
 
@@ -226,7 +226,7 @@ function selectLinkCards() {
 }
 
 function deleteSelectedLink() {
-    dataManager.checkpoint();
+    dataManager.makeCheckpoint();
     deleteLink(selectedLinks.shift());
     deselectLink();
 }
@@ -274,7 +274,7 @@ function beginLink() {
 function selectCardToggle(card) {
     if (linking) {
         const link = { cardA: linking.id, cardB: card.id, color: 'black' };
-        dataManager.checkpoint();
+        dataManager.makeCheckpoint();
         boardView.projectData.links.push(link);
         linking = undefined;
         refreshLink(link);
@@ -373,7 +373,7 @@ function centerCards(cards) {
 }
 
 function groupSelection() {
-    dataManager.checkpoint();
+    dataManager.makeCheckpoint();
     const cards = Array.from(selectedCards).map((card) => card.id);
     const color = `rgb(${randomInt(0, 255)} ${randomInt(0, 255)} ${randomInt(0, 255)})`;
     const group = { cards, color };
@@ -388,7 +388,7 @@ const svgToGroup = new Map();
 const svgToLink = new Map();
 
 function dragGroups(event) {
-    dataManager.checkpoint();
+    dataManager.makeCheckpoint();
     const overlapping = document.elementsFromPoint(event.clientX, event.clientY);
     const svgs = overlapping.map((overlap) => overlap.closest("svg")).filter((svg) => svg !== null);
     const groups = new Set(svgs.map((svg) => svgToGroup.get(svg)).filter((group) => group !== undefined));
@@ -402,7 +402,7 @@ function dragGroups(event) {
 }
 
 function dragLinks(event) {
-    dataManager.checkpoint();
+    dataManager.makeCheckpoint();
     const overlapping = document.elementsFromPoint(event.clientX, event.clientY);
     const svgs = overlapping.map((overlap) => overlap.closest("svg")).filter((svg) => svg !== null);
     const links = new Set(svgs.map((svg) => svgToLink.get(svg)).filter((link) => link !== undefined));
@@ -720,7 +720,7 @@ class DominoCardView {
             const drags = [];
 
             if (duplicate) {
-                dataManager.checkpoint();
+                dataManager.makeCheckpoint();
                 const copies = targets.map(duplicateCard);
                 if (selected) {
                     deselectAll();
@@ -729,7 +729,7 @@ class DominoCardView {
                 drags.push(...copies.map((card) => boardView.cardToView.get(card).startDrag(event)));
                 drags[0].on("click", (event) => copies.map(deleteCard));
             } else {
-                dataManager.checkpoint();
+                dataManager.makeCheckpoint();
                 drags.push(...targets.map((card) => boardView.cardToView.get(card).startDrag(event)));
             }
 
@@ -1101,11 +1101,11 @@ class DominoProjectManager {
     }
 
     get canUndo() {
-        return this.index > 0;
+        return this.index > 0 || this.dirty;
     }
 
     get canRedo() {
-        return this.index < this.history.length - 1;
+        return this.index < this.history.length - 1 && !this.dirty;
     }
 
     constructor() {
@@ -1113,6 +1113,7 @@ class DominoProjectManager {
         this.history = [];
         this.index = -1;
         this.historyLimit = 20;
+        this.dirty = false;
     }
 
     /**
@@ -1127,7 +1128,14 @@ class DominoProjectManager {
         boardView.loadProject(this.data);
     }
 
-    checkpoint() {
+    markDirty() {
+        if (this.dirty) return;
+        this.makeCheckpoint();
+        this.dirty = true;
+    }
+
+    makeCheckpoint() {
+        this.dirty = false;
         this.history.length = this.index + 1;
         const active = this.data;
         this.history[this.index] = COPY(active);
@@ -1148,6 +1156,7 @@ class DominoProjectManager {
         this.index -= 1;
         deselectAll();
         boardView.loadProject(this.data);
+        this.dirty = false;
     }
 
     redo() {
@@ -1155,5 +1164,6 @@ class DominoProjectManager {
         this.index += 1;
         deselectAll();
         boardView.loadProject(this.data);
+        this.dirty = false;
     }
 }
