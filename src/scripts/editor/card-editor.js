@@ -13,11 +13,26 @@ class CardEditor {
         this.iconIconInputs = /** @type {HTMLInputElement[]} */ ([1, 2, 3, 4].map((i) => elementByPath(`card-editor/icons/${i}/icon`, "input")));
         this.iconActionInputs = /** @type {HTMLInputElement[]} */ ([1, 2, 3, 4].map((i) => elementByPath(`card-editor/icons/${i}/action`, "input")));
 
-        const inputs = [this.textInput, ...this.iconIconInputs, ...this.iconActionInputs, this.altTextInput];
-        inputs.forEach((input) => input.addEventListener("input", () => {
-            dataManager.markDirty();
+        [0, 1, 2, 3].forEach((i) => {
+            this.iconIconInputs[i].addEventListener("input", () => {
+                dataManager.markDirty(this.cards[0].id + "/icons");
+                this.pushData();
+            });
+            this.iconActionInputs[i].addEventListener("input", () => {
+                dataManager.markDirty(this.cards[0].id + "/icons");
+                this.pushData();
+            });
+        });
+
+        this.textInput.addEventListener("input", () => {
+            dataManager.markDirty(this.cards[0].id + "/text");
             this.pushData();
-        }));
+        });
+
+        this.altTextInput.addEventListener("input", () => {
+            dataManager.markDirty(this.cards[0].id + "/alttext");
+            this.pushData();
+        });
 
         setActionHandler("card-editor/image/upload", async () => {
             const [file] = await pickFiles("image/*");
@@ -148,7 +163,7 @@ class CardEditor {
      * @param {string} suffix
      */
     wrapSelectedText(prefix, suffix) {
-        dataManager.markDirty();
+        dataManager.markDirty(this.cards[0].id + "/text");
         const start = this.textInput.selectionStart;
         const end = this.textInput.selectionEnd;
         const text = this.textInput.value.substring(start, end);

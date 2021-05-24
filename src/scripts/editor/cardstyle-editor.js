@@ -198,20 +198,20 @@ class CardStyleEditor {
         );
 
         this.backgroundColorInput.addEventListener("input", () => {
-            dataManager.markDirty();
+            dataManager.markDirty("global/background-color");
             boardView.projectData.boardStyle["background-color"] = this.backgroundColorInput.value;
             refreshBoardStyle();
         });
 
         this.focusInput.addEventListener("input", () => {
-            dataManager.markDirty();
+            dataManager.markDirty("global/focus");
             boardView.projectData.details.focus = this.focusInput.value;
         });
 
         this.nameInput.addEventListener("input", () => {
             const style = this.getSelectedStyle();
             if (style) {
-                dataManager.markDirty();
+                dataManager.markDirty(this.selectedStyleId + "/name");
                 style.name = this.nameInput.value;
             }
         });
@@ -225,14 +225,14 @@ class CardStyleEditor {
         this.customCssInput.addEventListener("input", () => {
             const style = this.getSelectedStyle();
             if (style) {
-                dataManager.markDirty();
+                dataManager.markDirty(this.selectedStyleId + "/custom-css");
                 style.properties["custom-css"] = this.customCssInput.value;
                 refreshCardStyles();
             }
         });
 
         this.titleInput.addEventListener("input", () => {
-            dataManager.markDirty();
+            dataManager.markDirty("global/title");
             boardView.projectData.details.title = this.titleInput.value;
         });
 
@@ -273,7 +273,7 @@ class CardStyleEditor {
 
     getSelectedStyle() {
         const styles = boardView.projectData.cardStyles;
-        return styles.find((style) => style.id === this.selectedStyle);
+        return styles.find((style) => style.id === this.selectedStyleId);
     }
 
     pullData() {
@@ -287,8 +287,8 @@ class CardStyleEditor {
             (style) => html("option", { value: style.id }, style.name),
         );
 
-        if (!this.selectedStyle) this.selectedStyle = boardView.projectData.cardStyles[0].id;
-        this.styleSelect.value = this.selectedStyle;
+        if (!this.selectedStyleId) this.selectedStyleId = boardView.projectData.cardStyles[0].id;
+        this.styleSelect.value = this.selectedStyleId;
 
         refreshDropdown(
             this.textFontRow.select,
@@ -308,7 +308,7 @@ class CardStyleEditor {
     }
 
     setSelectedStyle(styleId) {
-        this.selectedStyle = styleId;
+        this.selectedStyleId = styleId;
         this.pullData();
     }
 

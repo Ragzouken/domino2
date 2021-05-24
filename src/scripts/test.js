@@ -1113,7 +1113,7 @@ class DominoProjectManager {
         this.history = [];
         this.index = -1;
         this.historyLimit = 20;
-        this.dirty = false;
+        this.dirty = undefined;
     }
 
     /**
@@ -1128,10 +1128,10 @@ class DominoProjectManager {
         boardView.loadProject(this.data);
     }
 
-    markDirty() {
-        if (this.dirty) return;
+    markDirty(path="generic") {
+        if (path === this.dirty) return;
         this.makeCheckpoint();
-        this.dirty = true;
+        this.dirty = path;
     }
 
     makeCheckpoint() {
@@ -1156,7 +1156,7 @@ class DominoProjectManager {
         this.index -= 1;
         deselectAll();
         boardView.loadProject(this.data);
-        this.dirty = false;
+        this.dirty = undefined;
     }
 
     redo() {
@@ -1164,6 +1164,6 @@ class DominoProjectManager {
         this.index += 1;
         deselectAll();
         boardView.loadProject(this.data);
-        this.dirty = false;
+        this.dirty = undefined;
     }
 }
