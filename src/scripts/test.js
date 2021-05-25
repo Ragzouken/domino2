@@ -729,7 +729,7 @@ class DominoCardView {
                 drags.push(...copies.map((card) => boardView.cardToView.get(card).startDrag(event)));
                 drags[0].on("click", (event) => copies.map(deleteCard));
             } else {
-                dataManager.makeCheckpoint();
+                dataManager.markDirty(`${targets[0].id}/position`);
                 drags.push(...targets.map((card) => boardView.cardToView.get(card).startDrag(event)));
             }
 
@@ -874,6 +874,8 @@ class DominoCardView {
         const mouse = this.scene.mouseEventToSceneTransform(event);
         const grab = mouse.invertSelf().multiplySelf(translationMatrix(this.card.position));
 
+        const initialPosition = this.card.position;
+
         // create target shadow
         const target = html("div", { class: "target" });
         this.scene.container.appendChild(target);
@@ -912,6 +914,10 @@ class DominoCardView {
 
             // TODO:
             onCardMoved(this.card);
+
+            if (this.card.position.x === initialPosition.x && this.card.position.y === initialPosition.y) {
+                dataManager.cancelDirty(`${this.card.id}/position`);
+            }
         });
 
         this.setCursor("grabbing");
@@ -1132,6 +1138,14 @@ class DominoProjectManager {
         if (path === this.dirty) return;
         this.makeCheckpoint();
         this.dirty = path;
+    }
+
+    cancelDirty(path) {
+        if (path !== this.dirty) return;
+        this.history.splice(this.index, 1);
+        this.index -= 1;
+        this.dirty = undefined;
+        updateToolbar();
     }
 
     makeCheckpoint() {
