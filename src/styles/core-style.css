@@ -223,7 +223,7 @@ svg.link line.selection-flash {
 
     color: var(--text-color, black);
     font-size: var(--text-size, initial);
-    font-family: var(--text-font, "Lora", sans-serif);
+    font-family: var(--text-font, inherit);
     text-align: var(--text-align, inherit);
 }
 

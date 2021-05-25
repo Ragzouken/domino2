@@ -39,7 +39,7 @@ async function loadData() {
 async function loadDataDeferred() {
     console.log("deferred");
 
-    const css = html("style");
+    const css = html("style", { id: "active-font" });
     css.textContent = document.getElementById("font").textContent;
     css.setAttribute("data-editor-only", undefined);
     document.head.appendChild(css);

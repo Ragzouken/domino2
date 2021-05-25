@@ -1181,3 +1181,17 @@ class DominoProjectManager {
         this.dirty = undefined;
     }
 }
+
+async function downloadGoogleFont(url) {
+    const face = await fetch(url).then((r) => r.text());
+    const [, srcURL] = face.match(/url\((http.*woff2)\)/);
+    const [, family] = face.match(/font-family: ['"](.*)["'];/);
+    const dataURL = await fetch(srcURL).then((r) => r.blob()).then(dataURLFromFile);
+    return { family, css: face.replace(srcURL, dataURL) };
+}
+
+async function replaceFont(url) {
+    const { family, css } = await downloadGoogleFont(url);
+    ONE("#active-font").textContent = css;
+    document.body.style.fontFamily = family;
+}
