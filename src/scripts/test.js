@@ -729,7 +729,7 @@ class DominoCardView {
                 drags.push(...copies.map((card) => boardView.cardToView.get(card).startDrag(event)));
                 drags[0].on("click", (event) => copies.map(deleteCard));
             } else {
-                dataManager.markDirty(`${targets[0].id}/position`);
+                dataManager.markDirty(`selected/position`);
                 drags.push(...targets.map((card) => boardView.cardToView.get(card).startDrag(event)));
             }
 
@@ -916,7 +916,9 @@ class DominoCardView {
             onCardMoved(this.card);
 
             if (this.card.position.x === initialPosition.x && this.card.position.y === initialPosition.y) {
-                dataManager.cancelDirty(`${this.card.id}/position`);
+                dataManager.cancelDirty(`selected/position`);
+            } else {
+                dataManager.confirmDirty(`selected/position`);
             }
         });
 
@@ -1148,12 +1150,18 @@ class DominoProjectManager {
         updateToolbar();
     }
 
+    confirmDirty(path) {
+        if (path !== this.dirty) return;
+        this.dirty = undefined;
+        updateToolbar();
+    }
+
     makeCheckpoint() {
-        this.dirty = false;
+        this.dirty = undefined;
         this.history.length = this.index + 1;
-        const active = this.data;
-        this.history[this.index] = COPY(active);
-        this.history.push(active);
+        
+        this.history[this.index] = COPY(boardView.projectData);
+        this.history.push(boardView.projectData);
         
         if (this.index < this.historyLimit) {
             this.index += 1;
@@ -1161,7 +1169,7 @@ class DominoProjectManager {
             // delete earliest history
             this.history.splice(0, 1);
         }
-
+        
         updateToolbar();
     }
 

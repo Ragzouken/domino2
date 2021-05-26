@@ -39,8 +39,13 @@ async function loadData() {
 async function loadDataDeferred() {
     console.log("deferred");
 
+    const font = ONE("#font");
+    const family = font.getAttribute("data-font-family");
+
     const css = html("style", { id: "active-font" });
-    css.textContent = document.getElementById("font").textContent;
+    css.textContent = font.textContent;
     css.setAttribute("data-editor-only", undefined);
     document.head.appendChild(css);
+
+    ONE(":root").style.fontFamily = family;
 }
