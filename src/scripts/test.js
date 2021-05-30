@@ -1078,7 +1078,7 @@ async function compressImageURL(url, quality, size) {
 
     return new Promise((resolve, reject) => {
         image.onload = () => {
-            const scale = Math.max(tw / image.width, th / image.height);
+            const scale = Math.min(tw / image.width, th / image.height);
             const [fw, fh] = [image.width * scale, image.height * scale];
             const [ox, oy] = [(tw - fw)/2, (th - fh)/2];
 
