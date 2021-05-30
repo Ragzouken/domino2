@@ -1079,11 +1079,10 @@ async function compressImageURL(url, quality, size) {
     return new Promise((resolve, reject) => {
         image.onload = () => {
             const scale = Math.min(tw / image.width, th / image.height);
-            const [fw, fh] = [image.width * scale, image.height * scale];
-            const [ox, oy] = [(tw - fw)/2, (th - fh)/2];
-
+            canvas.width = image.width * scale;
+            canvas.height = image.height * scale;
             const context = canvas.getContext('2d');
-            context.drawImage(image, ox, oy, fw, fh);
+            context.drawImage(image, 0, 0, canvas.width, canvas.height);
             const url = canvas.toDataURL('image/jpeg', quality);
 
             resolve(url);
