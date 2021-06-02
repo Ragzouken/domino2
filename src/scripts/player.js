@@ -1,5 +1,8 @@
 /** @param {DominoDataProject} projectData */
 function repairProjectData(projectData) {
+    const cardIds = new Set(projectData.cards.map((card) => card.id));
+    projectData.links = projectData.links.filter((link) => cardIds.has(link.cardA) && cardIds.has(link.cardB));
+    projectData.groups = projectData.groups.filter((group) => new Set([...group.cards, ...cardIds]).size === cardIds.size);
 }
 
 class DominoBoardView {

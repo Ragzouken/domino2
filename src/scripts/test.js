@@ -161,11 +161,11 @@ function insertCard(scene, card) {
 function deleteCard(card) {
     arrayDiscard(boardView.projectData.cards, card);
 
-    boardView.projectData.groups.forEach((group) => {
+    Array.from(boardView.projectData.groups).forEach((group) => {
         if (arrayDiscard(group.cards, card.id)) refreshGroup(group);
         if (group.cards.length === 0) deleteGroup(group);
     });
-    boardView.projectData.links.forEach((link) => {
+    Array.from(boardView.projectData.links).forEach((link) => {
         if (link.cardA === card.id || link.cardB === card.id) {
             deleteLink(link);
         }
@@ -584,7 +584,7 @@ class DominoLinkView {
     regenerateSVG() {
         while (this.root.children.length > 0) this.root.children[0].remove();
         const [cardA, cardB] = [getCardFromId(this.link.cardA), getCardFromId(this.link.cardB)];
-        
+
         const { x, y, width, height } = boundCards([cardA, cardB]);
         const rect = { x, y, width, height };
 
