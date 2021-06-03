@@ -74,8 +74,15 @@ async function refreshSaves() {
 }
 
 setActionHandler("project/save", async () => {
+    const timer = sleep(250);
+    const saveButton = ONE("#save");
+    saveButton.disabled = true;
+    saveButton.innerText = "⏳";
     await saveProject(boardView.projectData, boardView.projectData.details.id);
     refreshSaves();
+    await timer;
+    saveButton.disabled = false;
+    saveButton.innerText = "💾"
 });
 
 setActionHandler("global/saves/load", async () => {

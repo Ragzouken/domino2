@@ -41,12 +41,12 @@ html
                 #cards(data-empty)
         #sidebar-toggle.toolbar-group.icon-bar
             .icon(data-action="global-editor/toggle" title="board settings") 🔨
-            .icon(data-action="global/view-saves" title="view saved boards") 📂
         #toolbar(data-block-clicks)
             .toolbar-group.icon-bar
                 #undo.icon.disabled(data-action="global/undo" title="undo") ↩
                 #redo.icon.disabled(data-action="global/redo" title="redo") ↪
-                .icon(data-action="project/save" title="save in browser") 💾
+                #save.icon(data-action="project/save" title="save in browser") 💾
+                .icon(data-action="global/view-saves" title="view saved boards") 📂
 
             .toolbar-group.icon-bar(data-path="picker" hidden)
                 span click a card to link to
