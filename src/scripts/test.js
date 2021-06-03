@@ -57,6 +57,12 @@ async function test() {
     setActionHandler("global/undo", () => dataManager.undo());
     setActionHandler("global/redo", () => dataManager.redo());
 
+    setActionHandler("global/view-saves", () => {
+        switchTab("sidebar/board");
+        cardStyleEditor.open();
+        ONE("#saved-boards").open = true;
+    });
+
     setActionHandler("project/reset", () => dataManager.reset(JSON.parse(ONE("#project-data").innerHTML)));
 
     setActionHandler("selection/copy-id", () => {
