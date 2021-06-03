@@ -375,7 +375,7 @@ function centerCards(cards) {
     padRect(rect, 64);
     scene.frameRect(rect, .25, 1);
 
-    if (cards.length === 1) window.location.replace("#" + cards[0].id);
+    //if (cards.length === 1) window.location.replace("#" + cards[0].id);
 }
 
 function groupSelection() {

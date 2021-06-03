@@ -89,6 +89,7 @@ setActionHandler("global/saves/load", async () => {
     const id = elementByPath("global/saves", "select").value;
     const project = await loadProject(id);
     dataManager.reset(project);
+    centerCards(project.cards);
 });
 
 setActionHandler("global/saves/duplicate", async () => {
