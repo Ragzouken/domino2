@@ -90,6 +90,11 @@ async function test() {
         linking = undefined;
         updateToolbar();
     });
+
+    setActionHandler("global/center-focus", () => {
+        const data = boardView.projectData;
+        if (data.details.focus) centerCards(getCardsByIds(data.details.focus.slice(1).split(",")));
+    });
     
     // image pasting
     window.addEventListener("paste", (event) => cardEditor.paste(event));

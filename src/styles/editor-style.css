@@ -293,3 +293,8 @@ body[data-player] #toolbar {
     flex-direction: column;
     gap: 1em;
 }
+
+
+.button-row .shrink {
+    flex: 0;
+}

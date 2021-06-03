@@ -21,7 +21,7 @@ async function start() {
     await test();
     data.details.id = nanoid();
     dataManager.reset(data);
-    if (data.details.focus) centerCards(getCardsByIds(data.details.focus.slice(1).split(",")));
+    invokeAction("global/center-focus");
 
     console.log("player", player);
     if (player) {
